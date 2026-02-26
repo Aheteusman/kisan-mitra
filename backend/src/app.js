@@ -2,7 +2,9 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
+const rateLimit = require('express-rate-limit');
 const { env } = require('./config/env');
+const { prisma } = require('./config/prisma');
 
 const app = express();
 
@@ -13,9 +15,29 @@ app.use(morgan(env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-// Health check — always works, even if DB is down
-app.get('/health', (req, res) => {
-  res.json({ status: 'ok', uptime: Math.floor(process.uptime()), env: env.NODE_ENV });
+// ── Rate Limiting ────────────────────────────────────────────────────────────
+// Strict limit on auth routes (prevent brute force)
+app.use('/api/auth', rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 20,
+  message: { success: false, error: { message: 'Too many auth attempts. Try in 15 minutes.' } },
+}));
+
+// General API limit
+app.use('/api', rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 200,
+}));
+// ────────────────────────────────────────────────────────────────────────────
+
+// Health check — pings DB to keep Supabase from pausing
+app.get('/health', async (req, res) => {
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+    res.json({ status: 'ok', uptime: Math.floor(process.uptime()), env: env.NODE_ENV });
+  } catch (e) {
+    res.status(503).json({ status: 'error', message: 'DB unreachable' });
+  }
 });
 
 // Phase 1 — Auth & Users
