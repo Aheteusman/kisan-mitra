@@ -22,6 +22,7 @@ jobs:
       - run: cd backend && npx prisma migrate deploy
         env:
           DATABASE_URL: postgresql://postgres:testpass@localhost:5432/kisan_test
+          DIRECT_URL: postgresql://postgres:testpass@localhost:5432/kisan_test
       - run: cd backend && npm test
         env:
           DATABASE_URL: postgresql://postgres:testpass@localhost:5432/kisan_test
