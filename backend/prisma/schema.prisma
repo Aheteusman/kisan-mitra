@@ -1,0 +1,260 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  FARMER
+  BUYER
+  DRIVER
+  TRADER
+}
+
+enum Language {
+  EN
+  KN
+  HI
+  MR
+}
+
+enum QualityGrade {
+  GRADE_A
+  GRADE_B
+  MIXED
+}
+
+enum ListingStatus {
+  ACTIVE
+  ACCEPTED
+  FULFILLED
+  CANCELLED
+  SUSPENDED
+}
+
+enum OrderStatus {
+  PENDING
+  ACCEPTED
+  TRANSPORT_BOOKED
+  LOADED
+  IN_TRANSIT
+  DELIVERED
+  CANCELLED
+}
+
+enum BuyerPaymentStatus {
+  PENDING
+  STAGE1_PAID
+  STAGE2_PAID
+  SETTLED
+  REFUNDED
+}
+
+enum SellerPaymentStatus {
+  WAITING
+  STAGE1_RELEASED
+  FULLY_SETTLED
+  HOLD
+  FORFEITED
+}
+
+enum DriverPaymentStatus {
+  PENDING
+  PAID
+}
+
+enum TransportMode {
+  DAILY_SUPPLY_CHAIN
+  PERSONAL_SUPPLY_LINE
+}
+
+enum TripStatus {
+  AVAILABLE
+  ACCEPTED
+  EN_ROUTE_FARM
+  LOADED
+  EN_ROUTE_BUYER
+  DELIVERED
+  CANCELLED
+}
+
+model User {
+  id              String   @id @default(cuid())
+  phone           String   @unique
+  email           String   @unique
+  passwordHash    String
+  name            String
+  role            Role
+  language        Language @default(EN)
+  isPhoneVerified Boolean  @default(false)
+  isActive        Boolean  @default(true)
+  fcmToken        String?
+  location        String?
+  cropsGrown      String[] @default([])
+  businessName    String?
+  businessType    String?
+  gstin           String?
+  deliveryAddress String?
+  vehicleType     String?
+  vehicleCapacity Float?
+  vehicleReg      String?
+  licenseUrl      String?
+  workMode        String?
+  isOnline        Boolean  @default(false)
+
+  violationCount Int     @default(0)
+  isSuspended    Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  listings      Listing[]
+  buyerOrders   Order[]        @relation("BuyerOrders")
+  sellerOrders  Order[]        @relation("SellerOrders")
+  trips         Trip[]         @relation("DriverTrips")
+  notifications Notification[]
+  otpRecords    OtpRecord[]
+}
+
+model OtpRecord {
+  id        String   @id @default(cuid())
+  userId    String
+  otp       String
+  expiresAt DateTime
+  used      Boolean  @default(false)
+
+  user User @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+}
+
+model Listing {
+  id       String @id @default(cuid())
+  sellerId String
+  seller   User   @relation(fields: [sellerId], references: [id])
+
+  cropType         String
+  quantityKg       Float
+  remainingKg      Float
+  harvestDate      DateTime
+  qualityGrade     QualityGrade
+  askingPrice      Float
+  aiPredictedPrice Float?
+  mandiRefPrice    Float?
+
+  status   ListingStatus @default(ACTIVE)
+  isTrader Boolean       @default(false)
+
+  aiGradePredicted QualityGrade?
+  aiGradeMismatch  Boolean       @default(false)
+  aiImagesValid    Boolean       @default(true)
+  targetMarket     String?
+
+  images ListingImage[]
+  orders Order[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ListingImage {
+  id        String  @id @default(cuid())
+  listingId String
+  listing   Listing @relation(fields: [listingId], references: [id])
+
+  cloudinaryId String
+  url          String
+  order        Int    @default(0)
+}
+
+model Order {
+  id        String  @id @default(cuid())
+  listingId String
+  listing   Listing @relation(fields: [listingId], references: [id])
+
+  buyerId String
+  buyer   User   @relation("BuyerOrders", fields: [buyerId], references: [id])
+
+  sellerId String
+  seller   User   @relation("SellerOrders", fields: [sellerId], references: [id])
+
+  quantityKg       Float
+  quantityActualKg Float?
+  pricePerKg       Float
+  produceTotal     Float
+  platformFee      Float
+  transportFee     Float    @default(0)
+  deliveryDate     DateTime
+  deliveryAddress  String
+
+  status              OrderStatus         @default(PENDING)
+  buyerPaymentStatus  BuyerPaymentStatus  @default(PENDING)
+  sellerPaymentStatus SellerPaymentStatus @default(WAITING)
+  driverPaymentStatus DriverPaymentStatus @default(PENDING)
+
+  qualityRating   Float?
+  packagingRating Float?
+  deliveryRating  Float?
+  ratingComment   String?
+
+  penaltyApplied Boolean @default(false)
+
+  trip Trip?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Trip {
+  id      String @id @default(cuid())
+  orderId String @unique
+  order   Order  @relation(fields: [orderId], references: [id])
+
+  driverId String?
+  driver   User?   @relation("DriverTrips", fields: [driverId], references: [id])
+
+  transportMode   TransportMode
+  vehicleType     String
+  pickupAddress   String
+  deliveryAddress String
+
+  status TripStatus @default(AVAILABLE)
+
+  loadedPhotoUrl String?
+  firestoreId    String?
+  earnings       Float
+  routeId        String?
+  scheduledTime  DateTime?
+  acceptedAt     DateTime?
+  loadedAt       DateTime?
+  deliveredAt    DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Notification {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  type  String
+  title String
+  body  String
+  data  Json?
+  read  Boolean @default(false)
+
+  createdAt DateTime @default(now())
+}
+
+model DscRoute {
+  id        String   @id @default(cuid())
+  name      String
+  region    String
+  schedule  String
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
