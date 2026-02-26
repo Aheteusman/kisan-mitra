@@ -1,28 +1,28 @@
 // backend/src/modules/listings/listings.test.js
 
 // ─── Manual mock for Prisma ────────────────────────────────────────────────
-// jest.mock('path') alone can't auto-create nested objects like
-// prisma.user.findUnique — we must supply the shape ourselves.
 jest.mock('../../config/prisma', () => ({
-  user: {
-    findUnique: jest.fn(),
-  },
-  listing: {
-    create:     jest.fn(),
-    findUnique: jest.fn(),
-    findMany:   jest.fn(),
-    update:     jest.fn(),
-    count:      jest.fn(),
-  },
-  listingImage: {
-    createMany: jest.fn(),
+  prisma: {
+    user: {
+      findUnique: jest.fn(),
+    },
+    listing: {
+      create:     jest.fn(),
+      findUnique: jest.fn(),
+      findMany:   jest.fn(),
+      update:     jest.fn(),
+      count:      jest.fn(),
+    },
+    listingImage: {
+      createMany: jest.fn(),
+    },
   },
 }));
 
 jest.mock('../../utils/cloudinary');
 jest.mock('../../utils/aiClient');
 
-const prisma            = require('../../config/prisma');
+const { prisma }        = require('../../config/prisma');
 const { uploadListingImage } = require('../../utils/cloudinary');
 const { getPriceAdvice, validateImages } = require('../../utils/aiClient');
 const { createListing, uploadImages, getListings } = require('./listings.service');
