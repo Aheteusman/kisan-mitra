@@ -52,7 +52,7 @@ function makeListing(overrides = {}) {
     isTrader: false,
     status: 'ACTIVE',
     aiPredictedPrice: null,
-    mandiReferencePrice: null,
+    mandiRefPrice: null,
     aiGradeMismatch: false,
     aiImagesValid: true,
     createdAt: new Date(),
@@ -120,7 +120,7 @@ describe('createListing', () => {
       expect.objectContaining({
         data: expect.objectContaining({
           aiPredictedPrice: null,
-          mandiReferencePrice: null,
+          mandiRefPrice: null,
         }),
       })
     );
