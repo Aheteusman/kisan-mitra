@@ -6,17 +6,19 @@
   "directories": {
     "test": "tests"
   },
-  "scripts": {
-    "start": "node src/server.js",
-    "dev": "nodemon src/server.js",
-    "test": "jest --forceExit --detectOpenHandles",
-    "test:coverage": "jest --coverage --forceExit",
-    "db:migrate": "npx prisma migrate dev",
-    "db:deploy": "npx prisma migrate deploy",
-    "db:generate": "npx prisma generate",
-    "db:studio": "npx prisma studio",
-    "db:seed": "node prisma/seed.js"
-  },
+ "scripts": {
+  "start": "node src/server.js",
+  "dev": "nodemon src/server.js",
+  "build": "echo 'No build step required'",
+  "build:dev": "echo 'No dev build step required'",
+  "test": "jest --forceExit --detectOpenHandles",
+  "test:coverage": "jest --coverage --forceExit",
+  "db:migrate": "npx prisma migrate dev",
+  "db:deploy": "npx prisma migrate deploy",
+  "db:generate": "npx prisma generate",
+  "db:studio": "npx prisma studio",
+  "db:seed": "node prisma/seed.js"
+},
   "keywords": [],
   "author": "",
   "license": "ISC",
