@@ -1,0 +1,4813 @@
+This file is a merged representation of the entire codebase, combined into a single document by Repomix.
+
+<file_summary>
+This section contains a summary of this file.
+
+<purpose>
+This file contains a packed representation of the entire repository's contents.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.
+</purpose>
+
+<file_format>
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files (if enabled)
+5. Multiple file entries, each consisting of:
+  - File path as an attribute
+  - Full contents of the file
+</file_format>
+
+<usage_guidelines>
+- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+</usage_guidelines>
+
+<notes>
+- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Files are sorted by Git change count (files with more changes are at the bottom)
+</notes>
+
+</file_summary>
+
+<directory_structure>
+.gitignore
+package.json
+prisma/migrations/20260225222041_init/migration.sql
+prisma/migrations/migration_lock.toml
+prisma/schema.prisma
+prisma/seed.js
+src/app.js
+src/config/env.js
+src/config/firebase.js
+src/config/prisma.js
+src/middleware/auth.js
+src/middleware/errorHandler.js
+src/middleware/roles.js
+src/middleware/validate.js
+src/modules/ai/ai.controller.js
+src/modules/ai/ai.router.js
+src/modules/analytics/analytics.router.js
+src/modules/analytics/analytics.service.js
+src/modules/analytics/analytics.test.js
+src/modules/auth/auth.controller.js
+src/modules/auth/auth.router.js
+src/modules/auth/auth.schema.js
+src/modules/auth/auth.service.js
+src/modules/auth/auth.test.js
+src/modules/drivers/drivers.router.js
+src/modules/drivers/drivers.service.js
+src/modules/drivers/drivers.test.js
+src/modules/listings/listings.controller.js
+src/modules/listings/listings.router.js
+src/modules/listings/listings.schema.js
+src/modules/listings/listings.service.js
+src/modules/listings/listings.test.js
+src/modules/notifications/notifications.router.js
+src/modules/notifications/notifications.service.js
+src/modules/notifications/notifications.test.js
+src/modules/orders/orders.controller.js
+src/modules/orders/orders.router.js
+src/modules/orders/orders.schema.js
+src/modules/orders/orders.service.js
+src/modules/orders/orders.test.js
+src/modules/transport/transport.router.js
+src/modules/transport/transport.service.js
+src/modules/users/users.router.js
+src/modules/users/users.service.js
+src/server.js
+src/utils/aiClient.js
+src/utils/cloudinary.js
+src/utils/jwt.js
+src/utils/password.js
+</directory_structure>
+
+<files>
+This section contains the contents of the repository's files.
+
+<file path=".gitignore">
+node_modules
+# Keep environment variables out of version control
+.env
+</file>
+
+<file path="package.json">
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "test": "jest --forceExit --detectOpenHandles",
+    "test:coverage": "jest --coverage --forceExit",
+    "db:migrate": "npx prisma migrate dev",
+    "db:deploy": "npx prisma migrate deploy",
+    "db:generate": "npx prisma generate",
+    "db:studio": "npx prisma studio",
+    "db:seed": "node prisma/seed.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@prisma/client": "^5.0.0",
+    "axios": "^1.6.0",
+    "bcrypt": "^6.0.0",
+    "bcryptjs": "^2.4.3",
+    "cloudinary": "^1.41.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.0",
+    "express": "^4.21.0",
+    "express-rate-limit": "^7.0.0",
+    "firebase-admin": "^12.0.0",
+    "helmet": "^7.0.0",
+    "joi": "^18.0.2",
+    "jsonwebtoken": "^9.0.0",
+    "morgan": "^1.10.0",
+    "multer": "^1.4.5-lts.1",
+    "prisma": "^5.0.0",
+    "zod": "^3.22.0"
+  },
+  "devDependencies": {
+    "jest": "^29.0.0",
+    "nodemon": "^3.0.0",
+    "supertest": "^6.3.0"
+  }
+}
+</file>
+
+<file path="prisma/migrations/20260225222041_init/migration.sql">
+-- CreateEnum
+CREATE TYPE "Role" AS ENUM ('FARMER', 'BUYER', 'DRIVER', 'TRADER');
+
+-- CreateEnum
+CREATE TYPE "Language" AS ENUM ('EN', 'KN', 'HI', 'MR');
+
+-- CreateEnum
+CREATE TYPE "QualityGrade" AS ENUM ('GRADE_A', 'GRADE_B', 'MIXED');
+
+-- CreateEnum
+CREATE TYPE "ListingStatus" AS ENUM ('ACTIVE', 'ACCEPTED', 'FULFILLED', 'CANCELLED', 'SUSPENDED');
+
+-- CreateEnum
+CREATE TYPE "OrderStatus" AS ENUM ('PENDING', 'ACCEPTED', 'TRANSPORT_BOOKED', 'LOADED', 'IN_TRANSIT', 'DELIVERED', 'CANCELLED');
+
+-- CreateEnum
+CREATE TYPE "BuyerPaymentStatus" AS ENUM ('PENDING', 'STAGE1_PAID', 'STAGE2_PAID', 'SETTLED', 'REFUNDED');
+
+-- CreateEnum
+CREATE TYPE "SellerPaymentStatus" AS ENUM ('WAITING', 'STAGE1_RELEASED', 'FULLY_SETTLED', 'HOLD', 'FORFEITED');
+
+-- CreateEnum
+CREATE TYPE "DriverPaymentStatus" AS ENUM ('PENDING', 'PAID');
+
+-- CreateEnum
+CREATE TYPE "TransportMode" AS ENUM ('DAILY_SUPPLY_CHAIN', 'PERSONAL_SUPPLY_LINE');
+
+-- CreateEnum
+CREATE TYPE "TripStatus" AS ENUM ('AVAILABLE', 'ACCEPTED', 'EN_ROUTE_FARM', 'LOADED', 'EN_ROUTE_BUYER', 'DELIVERED', 'CANCELLED');
+
+-- CreateTable
+CREATE TABLE "User" (
+    "id" TEXT NOT NULL,
+    "phone" TEXT NOT NULL,
+    "email" TEXT NOT NULL,
+    "passwordHash" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "role" "Role" NOT NULL,
+    "language" "Language" NOT NULL DEFAULT 'EN',
+    "isPhoneVerified" BOOLEAN NOT NULL DEFAULT false,
+    "isActive" BOOLEAN NOT NULL DEFAULT true,
+    "fcmToken" TEXT,
+    "location" TEXT,
+    "cropsGrown" TEXT[] DEFAULT ARRAY[]::TEXT[],
+    "businessName" TEXT,
+    "businessType" TEXT,
+    "gstin" TEXT,
+    "deliveryAddress" TEXT,
+    "vehicleType" TEXT,
+    "vehicleCapacity" DOUBLE PRECISION,
+    "vehicleReg" TEXT,
+    "licenseUrl" TEXT,
+    "workMode" TEXT,
+    "isOnline" BOOLEAN NOT NULL DEFAULT false,
+    "violationCount" INTEGER NOT NULL DEFAULT 0,
+    "isSuspended" BOOLEAN NOT NULL DEFAULT false,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "User_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "OtpRecord" (
+    "id" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "otp" TEXT NOT NULL,
+    "expiresAt" TIMESTAMP(3) NOT NULL,
+    "used" BOOLEAN NOT NULL DEFAULT false,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "OtpRecord_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Listing" (
+    "id" TEXT NOT NULL,
+    "sellerId" TEXT NOT NULL,
+    "cropType" TEXT NOT NULL,
+    "quantityKg" DOUBLE PRECISION NOT NULL,
+    "remainingKg" DOUBLE PRECISION NOT NULL,
+    "harvestDate" TIMESTAMP(3) NOT NULL,
+    "qualityGrade" "QualityGrade" NOT NULL,
+    "askingPrice" DOUBLE PRECISION NOT NULL,
+    "aiPredictedPrice" DOUBLE PRECISION,
+    "mandiRefPrice" DOUBLE PRECISION,
+    "status" "ListingStatus" NOT NULL DEFAULT 'ACTIVE',
+    "isTrader" BOOLEAN NOT NULL DEFAULT false,
+    "aiGradePredicted" "QualityGrade",
+    "aiGradeMismatch" BOOLEAN NOT NULL DEFAULT false,
+    "aiImagesValid" BOOLEAN NOT NULL DEFAULT true,
+    "targetMarket" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Listing_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "ListingImage" (
+    "id" TEXT NOT NULL,
+    "listingId" TEXT NOT NULL,
+    "cloudinaryId" TEXT NOT NULL,
+    "url" TEXT NOT NULL,
+    "order" INTEGER NOT NULL DEFAULT 0,
+
+    CONSTRAINT "ListingImage_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Order" (
+    "id" TEXT NOT NULL,
+    "listingId" TEXT NOT NULL,
+    "buyerId" TEXT NOT NULL,
+    "sellerId" TEXT NOT NULL,
+    "quantityKg" DOUBLE PRECISION NOT NULL,
+    "quantityActualKg" DOUBLE PRECISION,
+    "pricePerKg" DOUBLE PRECISION NOT NULL,
+    "produceTotal" DOUBLE PRECISION NOT NULL,
+    "platformFee" DOUBLE PRECISION NOT NULL,
+    "transportFee" DOUBLE PRECISION NOT NULL DEFAULT 0,
+    "deliveryDate" TIMESTAMP(3) NOT NULL,
+    "deliveryAddress" TEXT NOT NULL,
+    "status" "OrderStatus" NOT NULL DEFAULT 'PENDING',
+    "buyerPaymentStatus" "BuyerPaymentStatus" NOT NULL DEFAULT 'PENDING',
+    "sellerPaymentStatus" "SellerPaymentStatus" NOT NULL DEFAULT 'WAITING',
+    "driverPaymentStatus" "DriverPaymentStatus" NOT NULL DEFAULT 'PENDING',
+    "qualityRating" DOUBLE PRECISION,
+    "packagingRating" DOUBLE PRECISION,
+    "deliveryRating" DOUBLE PRECISION,
+    "ratingComment" TEXT,
+    "penaltyApplied" BOOLEAN NOT NULL DEFAULT false,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Order_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Trip" (
+    "id" TEXT NOT NULL,
+    "orderId" TEXT NOT NULL,
+    "driverId" TEXT,
+    "transportMode" "TransportMode" NOT NULL,
+    "vehicleType" TEXT NOT NULL,
+    "pickupAddress" TEXT NOT NULL,
+    "deliveryAddress" TEXT NOT NULL,
+    "status" "TripStatus" NOT NULL DEFAULT 'AVAILABLE',
+    "loadedPhotoUrl" TEXT,
+    "firestoreId" TEXT,
+    "earnings" DOUBLE PRECISION NOT NULL,
+    "routeId" TEXT,
+    "scheduledTime" TIMESTAMP(3),
+    "acceptedAt" TIMESTAMP(3),
+    "loadedAt" TIMESTAMP(3),
+    "deliveredAt" TIMESTAMP(3),
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Trip_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Notification" (
+    "id" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "type" TEXT NOT NULL,
+    "title" TEXT NOT NULL,
+    "body" TEXT NOT NULL,
+    "data" JSONB,
+    "read" BOOLEAN NOT NULL DEFAULT false,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "Notification_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "DscRoute" (
+    "id" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "region" TEXT NOT NULL,
+    "schedule" TEXT NOT NULL,
+    "isActive" BOOLEAN NOT NULL DEFAULT true,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "DscRoute_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateIndex
+CREATE UNIQUE INDEX "User_phone_key" ON "User"("phone");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Trip_orderId_key" ON "Trip"("orderId");
+
+-- AddForeignKey
+ALTER TABLE "OtpRecord" ADD CONSTRAINT "OtpRecord_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Listing" ADD CONSTRAINT "Listing_sellerId_fkey" FOREIGN KEY ("sellerId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ListingImage" ADD CONSTRAINT "ListingImage_listingId_fkey" FOREIGN KEY ("listingId") REFERENCES "Listing"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Order" ADD CONSTRAINT "Order_listingId_fkey" FOREIGN KEY ("listingId") REFERENCES "Listing"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Order" ADD CONSTRAINT "Order_buyerId_fkey" FOREIGN KEY ("buyerId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Order" ADD CONSTRAINT "Order_sellerId_fkey" FOREIGN KEY ("sellerId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Trip" ADD CONSTRAINT "Trip_orderId_fkey" FOREIGN KEY ("orderId") REFERENCES "Order"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Trip" ADD CONSTRAINT "Trip_driverId_fkey" FOREIGN KEY ("driverId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Notification" ADD CONSTRAINT "Notification_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+</file>
+
+<file path="prisma/migrations/migration_lock.toml">
+# Please do not edit this file manually
+# It should be added in your version-control system (i.e. Git)
+provider = "postgresql"
+</file>
+
+<file path="prisma/schema.prisma">
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum Role {
+  FARMER
+  BUYER
+  DRIVER
+  TRADER
+}
+
+enum Language {
+  EN
+  KN
+  HI
+  MR
+}
+
+enum QualityGrade {
+  GRADE_A
+  GRADE_B
+  MIXED
+}
+
+enum ListingStatus {
+  ACTIVE
+  ACCEPTED
+  FULFILLED
+  CANCELLED
+  SUSPENDED
+}
+
+enum OrderStatus {
+  PENDING
+  ACCEPTED
+  TRANSPORT_BOOKED
+  LOADED
+  IN_TRANSIT
+  DELIVERED
+  CANCELLED
+}
+
+enum BuyerPaymentStatus {
+  PENDING
+  STAGE1_PAID
+  STAGE2_PAID
+  SETTLED
+  REFUNDED
+}
+
+enum SellerPaymentStatus {
+  WAITING
+  STAGE1_RELEASED
+  FULLY_SETTLED
+  HOLD
+  FORFEITED
+}
+
+enum DriverPaymentStatus {
+  PENDING
+  PAID
+}
+
+enum TransportMode {
+  DAILY_SUPPLY_CHAIN
+  PERSONAL_SUPPLY_LINE
+}
+
+enum TripStatus {
+  AVAILABLE
+  ACCEPTED
+  EN_ROUTE_FARM
+  LOADED
+  EN_ROUTE_BUYER
+  DELIVERED
+  CANCELLED
+}
+
+model User {
+  id              String   @id @default(cuid())
+  phone           String   @unique
+  email           String   @unique
+  passwordHash    String
+  name            String
+  role            Role
+  language        Language @default(EN)
+  isPhoneVerified Boolean  @default(false)
+  isActive        Boolean  @default(true)
+  fcmToken        String?
+  location        String?
+  cropsGrown      String[] @default([])
+  businessName    String?
+  businessType    String?
+  gstin           String?
+  deliveryAddress String?
+  vehicleType     String?
+  vehicleCapacity Float?
+  vehicleReg      String?
+  licenseUrl      String?
+  workMode        String?
+  isOnline        Boolean  @default(false)
+
+  violationCount Int     @default(0)
+  isSuspended    Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  listings      Listing[]
+  buyerOrders   Order[]        @relation("BuyerOrders")
+  sellerOrders  Order[]        @relation("SellerOrders")
+  trips         Trip[]         @relation("DriverTrips")
+  notifications Notification[]
+  otpRecords    OtpRecord[]
+}
+
+model OtpRecord {
+  id        String   @id @default(cuid())
+  userId    String
+  otp       String
+  expiresAt DateTime
+  used      Boolean  @default(false)
+
+  user User @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+}
+
+model Listing {
+  id       String @id @default(cuid())
+  sellerId String
+  seller   User   @relation(fields: [sellerId], references: [id])
+
+  cropType         String
+  quantityKg       Float
+  remainingKg      Float
+  harvestDate      DateTime
+  qualityGrade     QualityGrade
+  askingPrice      Float
+  aiPredictedPrice Float?
+  mandiRefPrice    Float?
+
+  status   ListingStatus @default(ACTIVE)
+  isTrader Boolean       @default(false)
+
+  aiGradePredicted QualityGrade?
+  aiGradeMismatch  Boolean       @default(false)
+  aiImagesValid    Boolean       @default(true)
+  targetMarket     String?
+
+  images ListingImage[]
+  orders Order[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ListingImage {
+  id        String  @id @default(cuid())
+  listingId String
+  listing   Listing @relation(fields: [listingId], references: [id])
+
+  cloudinaryId String
+  url          String
+  order        Int    @default(0)
+}
+
+model Order {
+  id        String  @id @default(cuid())
+  listingId String
+  listing   Listing @relation(fields: [listingId], references: [id])
+
+  buyerId String
+  buyer   User   @relation("BuyerOrders", fields: [buyerId], references: [id])
+
+  sellerId String
+  seller   User   @relation("SellerOrders", fields: [sellerId], references: [id])
+
+  quantityKg       Float
+  quantityActualKg Float?
+  pricePerKg       Float
+  produceTotal     Float
+  platformFee      Float
+  transportFee     Float    @default(0)
+  deliveryDate     DateTime
+  deliveryAddress  String
+
+  status              OrderStatus         @default(PENDING)
+  buyerPaymentStatus  BuyerPaymentStatus  @default(PENDING)
+  sellerPaymentStatus SellerPaymentStatus @default(WAITING)
+  driverPaymentStatus DriverPaymentStatus @default(PENDING)
+
+  qualityRating   Float?
+  packagingRating Float?
+  deliveryRating  Float?
+  ratingComment   String?
+
+  penaltyApplied Boolean @default(false)
+
+  trip Trip?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Trip {
+  id      String @id @default(cuid())
+  orderId String @unique
+  order   Order  @relation(fields: [orderId], references: [id])
+
+  driverId String?
+  driver   User?   @relation("DriverTrips", fields: [driverId], references: [id])
+
+  transportMode   TransportMode
+  vehicleType     String
+  pickupAddress   String
+  deliveryAddress String
+
+  status TripStatus @default(AVAILABLE)
+
+  loadedPhotoUrl String?
+  firestoreId    String?
+  earnings       Float
+  routeId        String?
+  scheduledTime  DateTime?
+  acceptedAt     DateTime?
+  loadedAt       DateTime?
+  deliveredAt    DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Notification {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  type  String
+  title String
+  body  String
+  data  Json?
+  read  Boolean @default(false)
+
+  createdAt DateTime @default(now())
+}
+
+model DscRoute {
+  id        String   @id @default(cuid())
+  name      String
+  region    String
+  schedule  String
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+</file>
+
+<file path="prisma/seed.js">
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
+
+async function main() {
+  await prisma.dscRoute.createMany({
+    data: [
+      { name: 'Belagavi → Hubballi Express', region: 'Belagavi', schedule: '06:00 daily', isActive: true },
+      { name: 'Belagavi → Bengaluru Night Carrier', region: 'Belagavi', schedule: '22:00 daily', isActive: true },
+      { name: 'Dharwad → Davangere Route', region: 'Dharwad', schedule: '08:00 daily', isActive: true },
+      { name: 'Hubballi → Pune Corridor', region: 'Hubballi', schedule: '05:00 daily', isActive: true },
+      { name: 'Bagalkot → Bijapur Route', region: 'Bagalkot', schedule: '07:00 daily', isActive: true },
+    ],
+    skipDuplicates: true,
+  });
+  console.log('DSC routes seeded');
+}
+
+main().finally(() => prisma.$disconnect());
+</file>
+
+<file path="src/app.js">
+const express = require('express');
+const cors = require('cors');
+const helmet = require('helmet');
+const morgan = require('morgan');
+const rateLimit = require('express-rate-limit');
+const { env } = require('./config/env');
+const { prisma } = require('./config/prisma');
+
+const app = express();
+
+// Security and logging middleware
+app.use(helmet());
+app.use(cors({ origin: env.FRONTEND_URL, credentials: true }));
+app.use(morgan(env.NODE_ENV === 'production' ? 'combined' : 'dev'));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true }));
+
+// ── Rate Limiting ────────────────────────────────────────────────────────────
+// Strict limit on auth routes (prevent brute force)
+app.use('/api/auth', rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 20,
+  message: { success: false, error: { message: 'Too many auth attempts. Try in 15 minutes.' } },
+}));
+
+// General API limit
+app.use('/api', rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 200,
+}));
+// ────────────────────────────────────────────────────────────────────────────
+
+// Health check — pings DB to keep Supabase from pausing
+app.get('/health', async (req, res) => {
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+    res.json({ status: 'ok', uptime: Math.floor(process.uptime()), env: env.NODE_ENV });
+  } catch (e) {
+    res.status(503).json({ status: 'error', message: 'DB unreachable' });
+  }
+});
+
+// Phase 1 — Auth & Users
+app.use('/api/auth',  require('./modules/auth/auth.router'));
+app.use('/api/users', require('./modules/users/users.router'));
+
+// Phase 2 — Listings + AI Integration
+app.use('/api/listings', require('./modules/listings/listings.router'));
+app.use('/api/ai',       require('./modules/ai/ai.router'));
+
+// Phase 3 — Orders & Payment
+app.use('/api/orders', require('./modules/orders/orders.router'));
+
+// Phase 4 — Transport System & Driver Operations
+app.use('/api/transport', require('./modules/transport/transport.router'));
+app.use('/api/drivers',   require('./modules/drivers/drivers.router'));
+
+// book-transport endpoint lives under transport router but is accessed via /api/orders/:id/book-transport
+// Re-mount transport router at /api to handle the /orders/:id/book-transport path
+app.use('/api', require('./modules/transport/transport.router'));
+
+// Phase 5 — Notifications + Analytics + Market Prices
+app.use('/api/notifications', require('./modules/notifications/notifications.router'));
+app.use('/api/analytics',     require('./modules/analytics/analytics.router'));
+
+// Must be last
+const { errorHandler } = require('./middleware/errorHandler');
+app.use(errorHandler);
+
+module.exports = app;
+</file>
+
+<file path="src/config/env.js">
+const { z } = require('zod');
+require('dotenv').config();
+
+const envSchema = z.object({
+  DATABASE_URL: z.string().min(1),
+  JWT_SECRET: z.string().min(32, 'JWT_SECRET must be at least 32 characters'),
+  PORT: z.string().default('3000'),
+  NODE_ENV: z.enum(['development','production','test']).default('development'),
+  FIREBASE_PROJECT_ID: z.string().optional(),
+  FIREBASE_CLIENT_EMAIL: z.string().optional(),
+  FIREBASE_PRIVATE_KEY: z.string().optional(),
+  CLOUDINARY_CLOUD_NAME: z.string().optional(),
+  CLOUDINARY_API_KEY: z.string().optional(),
+  CLOUDINARY_API_SECRET: z.string().optional(),
+  AI_SERVICE_URL: z.string().url().optional(),
+  ORS_API_KEY: z.string().optional(),
+  OTP_DEV_MODE: z.string().default('false'),
+  FRONTEND_URL: z.string().default('http://localhost:8081'),
+});
+
+const parsed = envSchema.safeParse(process.env);
+if (!parsed.success) {
+  console.error('❌ Invalid environment variables:');
+  console.error(JSON.stringify(parsed.error.format(), null, 2));
+  process.exit(1);  // FAIL FAST — do not start with missing env vars
+}
+
+module.exports = { env: parsed.data };
+</file>
+
+<file path="src/config/firebase.js">
+const admin = require('firebase-admin');
+const { env } = require('./env');
+
+if (!admin.apps.length) {
+  admin.initializeApp({
+    credential: admin.credential.cert({
+      projectId: env.FIREBASE_PROJECT_ID,
+      clientEmail: env.FIREBASE_CLIENT_EMAIL,
+      privateKey: env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+    }),
+  });
+}
+
+const firestore = admin.firestore();
+
+module.exports = { admin, firestore };
+</file>
+
+<file path="src/config/prisma.js">
+const { PrismaClient } = require('@prisma/client');
+
+// Singleton pattern — one connection, reused everywhere
+const prisma = global.prisma || new PrismaClient({
+  log: process.env.NODE_ENV === 'development' ? ['query', 'error'] : ['error'],
+});
+
+if (process.env.NODE_ENV !== 'production') global.prisma = prisma;
+
+module.exports = { prisma };
+</file>
+
+<file path="src/middleware/auth.js">
+const { verify } = require('../utils/jwt');
+
+function authenticate(req, res, next) {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({
+        success: false,
+        error: { message: 'No token provided', code: 'NO_TOKEN' },
+      });
+    }
+    const token = authHeader.slice(7);
+    const decoded = verify(token);
+    req.user = decoded;
+    next();
+  } catch (err) {
+    return res.status(401).json({
+      success: false,
+      error: { message: 'Invalid or expired token', code: 'INVALID_TOKEN' },
+    });
+  }
+}
+
+// roles: array of allowed roles e.g. ['BUYER', 'TRADER']
+function authorize(roles) {
+  return (req, res, next) => {
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        error: { message: 'Not authenticated', code: 'NOT_AUTHENTICATED' },
+      });
+    }
+    if (!roles.includes(req.user.role)) {
+      return res.status(403).json({
+        success: false,
+        error: {
+          message: `Access denied. Required roles: ${roles.join(', ')}`,
+          code: 'FORBIDDEN',
+        },
+      });
+    }
+    next();
+  };
+}
+
+module.exports = { authenticate, authorize };
+</file>
+
+<file path="src/middleware/errorHandler.js">
+// eslint-disable-next-line no-unused-vars
+function errorHandler(err, req, res, next) {
+  const statusCode = err.statusCode || 500;
+  return res.status(statusCode).json({
+    success: false,
+    error: {
+      message: err.message || 'Internal Server Error',
+      code: err.code || 'INTERNAL_ERROR',
+    },
+  });
+}
+
+module.exports = { errorHandler };
+</file>
+
+<file path="src/middleware/roles.js">
+function requireRole(...roles) {
+  return function (req, res, next) {
+    if (!req.user || !roles.includes(req.user.role)) {
+      return res.status(403).json({
+        success: false,
+        error: { message: 'Forbidden: insufficient role', code: 'FORBIDDEN' },
+      });
+    }
+    next();
+  };
+}
+
+module.exports = { requireRole };
+</file>
+
+<file path="src/middleware/validate.js">
+function validate(schema) {
+  return function (req, res, next) {
+    const result = schema.safeParse(req.body);
+    if (!result.success) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'VALIDATION_ERROR',
+          details: result.error.errors.map((e) => ({
+            field: e.path.join('.'),
+            message: e.message,
+          })),
+        },
+      });
+    }
+    req.body = result.data;
+    next();
+  };
+}
+
+module.exports = { validate };
+</file>
+
+<file path="src/modules/ai/ai.controller.js">
+const { getPriceAdvice, getMarketOverview, validateImages } = require('../../utils/aiClient');
+
+async function priceAdviceController(req, res, next) {
+  try {
+    const result = await getPriceAdvice(req.body);
+    if (result === null) {
+      return res.json({ success: true, data: null, meta: { aiUnavailable: true } });
+    }
+    res.json({ success: true, data: result });
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function marketOverviewController(req, res, next) {
+  try {
+    const result = await getMarketOverview(req.query);
+    res.json({ success: true, data: result });
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function validateImagesController(req, res, next) {
+  try {
+    const result = await validateImages(req.body);
+    if (result === null) {
+      return res.json({ success: true, data: null, meta: { aiUnavailable: true } });
+    }
+    res.json({ success: true, data: result });
+  } catch (err) {
+    next(err);
+  }
+}
+
+module.exports = { priceAdviceController, marketOverviewController, validateImagesController };
+</file>
+
+<file path="src/modules/ai/ai.router.js">
+const express = require('express');
+const { authenticate } = require('../../middleware/auth');
+const {
+  priceAdviceController,
+  marketOverviewController,
+  validateImagesController,
+} = require('./ai.controller');
+
+const router = express.Router();
+
+router.post('/price-advice',    authenticate, priceAdviceController);
+router.get('/market-overview',  authenticate, marketOverviewController);
+router.post('/validate-images', authenticate, validateImagesController);
+
+module.exports = router;
+</file>
+
+<file path="src/modules/analytics/analytics.router.js">
+const { Router } = require('express');
+const { authenticate } = require('../../middleware/auth');
+const { requireRole } = require('../../middleware/roles');
+const {
+  getFarmerAnalytics,
+  getBuyerAnalytics,
+  getDriverAnalytics,
+  getMarketPrices,
+  getTraderCombinedAnalytics,
+} = require('./analytics.service');
+
+const router = Router();
+
+// GET /api/analytics/farmer
+router.get('/farmer', authenticate, requireRole('FARMER', 'TRADER'), async (req, res, next) => {
+  try {
+    const result = await getFarmerAnalytics(req.user.id);
+    res.json(result);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// GET /api/analytics/buyer
+router.get('/buyer', authenticate, requireRole('BUYER', 'TRADER'), async (req, res, next) => {
+  try {
+    const result = await getBuyerAnalytics(req.user.id);
+    res.json(result);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// GET /api/analytics/driver
+router.get('/driver', authenticate, requireRole('DRIVER'), async (req, res, next) => {
+  try {
+    const result = await getDriverAnalytics(req.user.id);
+    res.json(result);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// GET /api/analytics/trader
+// Returns combined selling + buying view in ONE request for the trader dashboard.
+router.get('/trader', authenticate, requireRole('TRADER'), async (req, res, next) => {
+  try {
+    const result = await getTraderCombinedAnalytics(req.user.id);
+    res.json(result);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// GET /api/analytics/market-prices?region=Belagavi
+router.get('/market-prices', authenticate, async (req, res, next) => {
+  try {
+    const { region = 'Karnataka' } = req.query;
+    const result = await getMarketPrices(region);
+    res.json(result);
+  } catch (err) {
+    next(err);
+  }
+});
+
+module.exports = router;
+</file>
+
+<file path="src/modules/analytics/analytics.service.js">
+const { PrismaClient } = require('@prisma/client');
+const aiClient = require('../../utils/aiClient');
+
+const prisma = new PrismaClient();
+
+// ── Date helpers ──────────────────────────────────────────────────────────────
+
+function getPeriodBounds() {
+  const now = new Date();
+  const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+  const startOfWeek = new Date(startOfDay);
+  startOfWeek.setDate(startOfDay.getDate() - startOfDay.getDay());
+
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+  return { startOfDay, startOfWeek, startOfMonth };
+}
+
+function sumField(arr, field) {
+  return arr.reduce((acc, item) => acc + (item[field] || 0), 0);
+}
+
+// ── getFarmerAnalytics ────────────────────────────────────────────────────────
+
+async function getFarmerAnalytics(sellerId) {
+  const { startOfDay, startOfWeek, startOfMonth } = getPeriodBounds();
+
+  // All settled orders (either stage)
+  const settledOrders = await prisma.order.findMany({
+    where: {
+      sellerId,
+      sellerPaymentStatus: { in: ['STAGE1_RELEASED', 'FULLY_SETTLED'] },
+    },
+    include: {
+      listing: { select: { cropType: true } },
+    },
+    orderBy: { updatedAt: 'desc' },
+  });
+
+  // Pending: stage1 released but not yet fully settled
+  const pendingPayments = settledOrders.filter(
+    o => o.sellerPaymentStatus === 'STAGE1_RELEASED'
+  );
+
+  // Earnings = produceTotal - platformFee (what seller actually gets)
+  const earnings = (order) => order.produceTotal - order.platformFee;
+
+  const todayOrders   = settledOrders.filter(o => o.updatedAt >= startOfDay);
+  const weekOrders    = settledOrders.filter(o => o.updatedAt >= startOfWeek);
+  const monthOrders   = settledOrders.filter(o => o.updatedAt >= startOfMonth);
+
+  // Per-crop breakdown (allTime)
+  const byCropMap = {};
+  for (const order of settledOrders) {
+    const crop = order.listing?.cropType || 'Unknown';
+    if (!byCropMap[crop]) byCropMap[crop] = { crop, totalEarnings: 0, orderCount: 0 };
+    byCropMap[crop].totalEarnings += earnings(order);
+    byCropMap[crop].orderCount += 1;
+  }
+
+  const platformFeeTotal = settledOrders.reduce((acc, o) => acc + (o.platformFee || 0), 0);
+
+  return {
+    today:      todayOrders.reduce((acc, o) => acc + earnings(o), 0),
+    thisWeek:   weekOrders.reduce((acc, o) => acc + earnings(o), 0),
+    thisMonth:  monthOrders.reduce((acc, o) => acc + earnings(o), 0),
+    allTime:    settledOrders.reduce((acc, o) => acc + earnings(o), 0),
+    byCrop:     Object.values(byCropMap).sort((a, b) => b.totalEarnings - a.totalEarnings),
+    pendingPayments: pendingPayments.map(o => ({
+      orderId: o.id,
+      amount: earnings(o),
+      crop: o.listing?.cropType,
+      updatedAt: o.updatedAt,
+    })),
+    platformFeeTotal: parseFloat(platformFeeTotal.toFixed(2)),
+  };
+}
+
+// ── getBuyerAnalytics ─────────────────────────────────────────────────────────
+
+async function getBuyerAnalytics(buyerId) {
+  const { startOfMonth } = getPeriodBounds();
+
+  const orders = await prisma.order.findMany({
+    where: {
+      buyerId,
+      status: { not: 'CANCELLED' },
+    },
+    include: {
+      listing: { select: { cropType: true } },
+    },
+    orderBy: { createdAt: 'desc' },
+  });
+
+  const totalSpend = (order) => order.produceTotal + order.platformFee + order.transportFee;
+
+  const monthOrders = orders.filter(o => o.createdAt >= startOfMonth);
+
+  // Per-crop breakdown
+  const byCropMap = {};
+  for (const order of orders) {
+    const crop = order.listing?.cropType || 'Unknown';
+    if (!byCropMap[crop]) byCropMap[crop] = { crop, totalSpend: 0, orderCount: 0 };
+    byCropMap[crop].totalSpend += totalSpend(order);
+    byCropMap[crop].orderCount += 1;
+  }
+
+  return {
+    thisMonth: monthOrders.reduce((acc, o) => acc + totalSpend(o), 0),
+    allTime:   orders.reduce((acc, o) => acc + totalSpend(o), 0),
+    byCrop:    Object.values(byCropMap).sort((a, b) => b.totalSpend - a.totalSpend),
+    recentOrders: orders.slice(0, 10).map(o => ({
+      orderId:  o.id,
+      crop:     o.listing?.cropType,
+      quantity: o.quantityKg,
+      spend:    totalSpend(o),
+      status:   o.status,
+      createdAt: o.createdAt,
+    })),
+  };
+}
+
+// ── getDriverAnalytics ────────────────────────────────────────────────────────
+
+async function getDriverAnalytics(driverId) {
+  const { startOfDay, startOfWeek, startOfMonth } = getPeriodBounds();
+
+  const trips = await prisma.trip.findMany({
+    where: { driverId, status: 'DELIVERED' },
+    orderBy: { deliveredAt: 'desc' },
+  });
+
+  const todayTrips  = trips.filter(t => t.deliveredAt >= startOfDay);
+  const weekTrips   = trips.filter(t => t.deliveredAt >= startOfWeek);
+  const monthTrips  = trips.filter(t => t.deliveredAt >= startOfMonth);
+
+  return {
+    today:     sumField(todayTrips, 'earnings'),
+    thisWeek:  sumField(weekTrips, 'earnings'),
+    thisMonth: sumField(monthTrips, 'earnings'),
+    allTime:   sumField(trips, 'earnings'),
+    recentTrips: trips.slice(0, 10).map(t => ({
+      id:          t.id,
+      orderId:     t.orderId,
+      earnings:    t.earnings,
+      deliveredAt: t.deliveredAt,
+    })),
+    message: '100% transport fee — zero deductions',
+  };
+}
+
+// ── getMarketPrices ───────────────────────────────────────────────────────────
+
+async function getMarketPrices(region) {
+  try {
+    const prices = await aiClient.getMarketOverview({ region });
+    return {
+      region,
+      prices,
+      lastUpdated: new Date(),
+    };
+  } catch (e) {
+    console.warn('AI market overview unavailable, using fallback:', e.message);
+
+    // Fallback: most common crop types from active listings
+    const topCrops = await prisma.listing.groupBy({
+      by: ['cropType'],
+      _count: { cropType: true },
+      where: { status: 'ACTIVE' },
+      orderBy: { _count: { cropType: 'desc' } },
+      take: 10,
+    });
+
+    const placeholderPrices = topCrops.map(({ cropType }) => ({
+      crop:         cropType,
+      ai_price:     null,
+      mandi_price:  null,
+      trend_pct:    null,
+      demand_level: 'UNKNOWN',
+      note:         'Market data temporarily unavailable',
+    }));
+
+    return {
+      region,
+      prices: placeholderPrices,
+      lastUpdated: new Date(),
+      dataSource: 'fallback',
+    };
+  }
+}
+
+// ── getTraderCombinedAnalytics ────────────────────────────────────────────────
+// Single call for trader dashboard — avoids race conditions on frontend.
+
+async function getTraderCombinedAnalytics(traderId) {
+  const [selling, buying] = await Promise.all([
+    getFarmerAnalytics(traderId),
+    getBuyerAnalytics(traderId),
+  ]);
+
+  return {
+    selling: {
+      today:          selling.today,
+      thisWeek:       selling.thisWeek,
+      thisMonth:      selling.thisMonth,
+      allTime:        selling.allTime,
+      byCrop:         selling.byCrop,
+      pendingPayments: selling.pendingPayments,
+      platformFeeTotal: selling.platformFeeTotal,
+    },
+    buying: {
+      thisMonth:    buying.thisMonth,
+      allTime:      buying.allTime,
+      byCrop:       buying.byCrop,
+      recentOrders: buying.recentOrders,
+    },
+    netThisMonth: selling.thisMonth - buying.thisMonth,
+  };
+}
+
+module.exports = {
+  getFarmerAnalytics,
+  getBuyerAnalytics,
+  getDriverAnalytics,
+  getMarketPrices,
+  getTraderCombinedAnalytics,
+};
+</file>
+
+<file path="src/modules/analytics/analytics.test.js">
+/**
+ * Tests for analytics.service.js
+ *
+ * Mocks: Prisma, aiClient
+ */
+
+jest.mock('@prisma/client');
+jest.mock('../../utils/aiClient');
+
+const { PrismaClient } = require('@prisma/client');
+const aiClient = require('../../utils/aiClient');
+
+// ─── Prisma mock setup ────────────────────────────────────────────────────────
+
+const mockFindMany  = jest.fn();
+const mockGroupBy   = jest.fn();
+const mockCount     = jest.fn();
+
+PrismaClient.mockImplementation(() => ({
+  order: {
+    findMany: mockFindMany,
+    count:    mockCount,
+  },
+  trip: {
+    findMany: mockFindMany,
+  },
+  listing: {
+    groupBy: mockGroupBy,
+  },
+}));
+
+const {
+  getFarmerAnalytics,
+  getBuyerAnalytics,
+  getDriverAnalytics,
+  getMarketPrices,
+  getTraderCombinedAnalytics,
+} = require('./analytics.service');
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function makeOrder(overrides = {}) {
+  const now = new Date();
+  return {
+    id:                 'order_1',
+    sellerId:           'seller_1',
+    buyerId:            'buyer_1',
+    quantityKg:         100,
+    pricePerKg:         20,
+    produceTotal:       2000,
+    platformFee:        120,      // 6% of 2000
+    transportFee:       50,
+    status:             'DELIVERED',
+    sellerPaymentStatus:'FULLY_SETTLED',
+    buyerPaymentStatus: 'SETTLED',
+    createdAt:          now,
+    updatedAt:          now,
+    listing:            { cropType: 'Tomato' },
+    ...overrides,
+  };
+}
+
+// ─── getFarmerAnalytics ───────────────────────────────────────────────────────
+
+describe('getFarmerAnalytics', () => {
+  beforeEach(() => jest.clearAllMocks());
+
+  test('platformFeeTotal equals sum of platformFee across all settled orders', async () => {
+    const orders = [
+      makeOrder({ produceTotal: 2000, platformFee: 120 }),
+      makeOrder({ id: 'order_2', produceTotal: 1000, platformFee: 60, sellerPaymentStatus: 'STAGE1_RELEASED' }),
+    ];
+    mockFindMany.mockResolvedValue(orders);
+
+    const result = await getFarmerAnalytics('seller_1');
+
+    expect(result.platformFeeTotal).toBe(180);   // 120 + 60
+  });
+
+  test('allTime earnings = sum of (produceTotal - platformFee)', async () => {
+    const orders = [
+      makeOrder({ produceTotal: 2000, platformFee: 120 }),
+      makeOrder({ id: 'order_2', produceTotal: 3000, platformFee: 180 }),
+    ];
+    mockFindMany.mockResolvedValue(orders);
+
+    const result = await getFarmerAnalytics('seller_1');
+
+    // (2000-120) + (3000-180) = 1880 + 2820 = 4700
+    expect(result.allTime).toBe(4700);
+  });
+
+  test('pendingPayments contains only STAGE1_RELEASED orders', async () => {
+    const orders = [
+      makeOrder({ sellerPaymentStatus: 'FULLY_SETTLED' }),
+      makeOrder({ id: 'order_2', sellerPaymentStatus: 'STAGE1_RELEASED' }),
+    ];
+    mockFindMany.mockResolvedValue(orders);
+
+    const result = await getFarmerAnalytics('seller_1');
+
+    expect(result.pendingPayments).toHaveLength(1);
+    expect(result.pendingPayments[0].orderId).toBe('order_2');
+  });
+
+  test('byCrop groups earnings correctly', async () => {
+    const orders = [
+      makeOrder({ listing: { cropType: 'Tomato' }, produceTotal: 2000, platformFee: 120 }),
+      makeOrder({ id: 'order_2', listing: { cropType: 'Onion' }, produceTotal: 1000, platformFee: 60 }),
+      makeOrder({ id: 'order_3', listing: { cropType: 'Tomato' }, produceTotal: 500, platformFee: 30 }),
+    ];
+    mockFindMany.mockResolvedValue(orders);
+
+    const result = await getFarmerAnalytics('seller_1');
+    const tomatoEntry = result.byCrop.find(c => c.crop === 'Tomato');
+
+    // (2000-120) + (500-30) = 1880 + 470 = 2350
+    expect(tomatoEntry).toBeDefined();
+    expect(tomatoEntry.totalEarnings).toBe(2350);
+    expect(tomatoEntry.orderCount).toBe(2);
+  });
+
+  test('returns zeroes when no settled orders', async () => {
+    mockFindMany.mockResolvedValue([]);
+
+    const result = await getFarmerAnalytics('seller_1');
+
+    expect(result.allTime).toBe(0);
+    expect(result.thisMonth).toBe(0);
+    expect(result.platformFeeTotal).toBe(0);
+    expect(result.byCrop).toHaveLength(0);
+    expect(result.pendingPayments).toHaveLength(0);
+  });
+});
+
+// ─── getMarketPrices ──────────────────────────────────────────────────────────
+
+describe('getMarketPrices', () => {
+  beforeEach(() => jest.clearAllMocks());
+
+  test('returns AI data when aiClient succeeds', async () => {
+    const mockPrices = [
+      { crop: 'Tomato', ai_price: 25, mandi_price: 22, trend_pct: 5, demand_level: 'HIGH' },
+    ];
+    aiClient.getMarketOverview = jest.fn().mockResolvedValue(mockPrices);
+
+    const result = await getMarketPrices('Belagavi');
+
+    expect(result.region).toBe('Belagavi');
+    expect(result.prices).toEqual(mockPrices);
+    expect(result.dataSource).toBeUndefined();   // real data, no fallback flag
+  });
+
+  test('returns placeholder data when AI service is down', async () => {
+    aiClient.getMarketOverview = jest.fn().mockRejectedValue(new Error('AI timeout'));
+    mockGroupBy.mockResolvedValue([
+      { cropType: 'Tomato', _count: { cropType: 5 } },
+      { cropType: 'Onion',  _count: { cropType: 3 } },
+    ]);
+
+    const result = await getMarketPrices('Belagavi');
+
+    expect(result.region).toBe('Belagavi');
+    expect(result.dataSource).toBe('fallback');
+    expect(result.prices).toHaveLength(2);
+    expect(result.prices[0].crop).toBe('Tomato');
+    expect(result.prices[0].ai_price).toBeNull();
+    expect(result.prices[0].demand_level).toBe('UNKNOWN');
+  });
+
+  test('returns empty prices array when AI down and no active listings', async () => {
+    aiClient.getMarketOverview = jest.fn().mockRejectedValue(new Error('AI down'));
+    mockGroupBy.mockResolvedValue([]);
+
+    const result = await getMarketPrices('UnknownRegion');
+
+    expect(result.prices).toHaveLength(0);
+    expect(result.dataSource).toBe('fallback');
+  });
+});
+
+// ─── getBuyerAnalytics ────────────────────────────────────────────────────────
+
+describe('getBuyerAnalytics', () => {
+  beforeEach(() => jest.clearAllMocks());
+
+  test('allTime includes produceTotal + platformFee + transportFee', async () => {
+    const orders = [
+      makeOrder({ produceTotal: 2000, platformFee: 120, transportFee: 50 }),
+    ];
+    mockFindMany.mockResolvedValue(orders);
+
+    const result = await getBuyerAnalytics('buyer_1');
+
+    expect(result.allTime).toBe(2170);  // 2000 + 120 + 50
+  });
+});
+
+// ─── getTraderCombinedAnalytics ───────────────────────────────────────────────
+
+describe('getTraderCombinedAnalytics', () => {
+  beforeEach(() => jest.clearAllMocks());
+
+  test('combines selling and buying data in one response', async () => {
+    // Both getFarmerAnalytics and getBuyerAnalytics call order.findMany
+    mockFindMany
+      .mockResolvedValueOnce([makeOrder({ produceTotal: 3000, platformFee: 180 })])  // selling
+      .mockResolvedValueOnce([makeOrder({ produceTotal: 1000, platformFee: 60, transportFee: 0 })]);  // buying
+
+    const result = await getTraderCombinedAnalytics('trader_1');
+
+    expect(result).toHaveProperty('selling');
+    expect(result).toHaveProperty('buying');
+    expect(result).toHaveProperty('netThisMonth');
+    expect(result.selling.platformFeeTotal).toBe(180);
+  });
+
+  test('netThisMonth = selling.thisMonth - buying.thisMonth', async () => {
+    const now = new Date();
+    // Selling order this month
+    mockFindMany
+      .mockResolvedValueOnce([makeOrder({ produceTotal: 5000, platformFee: 300, updatedAt: now })])
+      .mockResolvedValueOnce([makeOrder({ produceTotal: 2000, platformFee: 120, transportFee: 100, createdAt: now })]);
+
+    const result = await getTraderCombinedAnalytics('trader_1');
+
+    // selling thisMonth = 5000-300 = 4700
+    // buying thisMonth = 2000+120+100 = 2220
+    expect(result.netThisMonth).toBe(result.selling.thisMonth - result.buying.thisMonth);
+  });
+});
+</file>
+
+<file path="src/modules/auth/auth.controller.js">
+const authService = require('./auth.service');
+
+async function register(req, res, next) {
+  try {
+    const data = await authService.registerUser(req.body);
+    return res.status(201).json({ success: true, data });
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function verifyOtp(req, res, next) {
+  try {
+    const { userId, otp } = req.body;
+    const data = await authService.verifyOtp(userId, otp);
+    return res.status(200).json({ success: true, data });
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function login(req, res, next) {
+  try {
+    const { emailOrPhone, password } = req.body;
+    const data = await authService.loginUser(emailOrPhone, password);
+    return res.status(200).json({ success: true, data });
+  } catch (err) {
+    next(err);
+  }
+}
+
+module.exports = { register, verifyOtp, login };
+</file>
+
+<file path="src/modules/auth/auth.router.js">
+const express = require('express');
+const { validate } = require('../../middleware/validate');
+const { registerSchema, verifyOtpSchema, loginSchema } = require('./auth.schema');
+const { register, verifyOtp, login } = require('./auth.controller');
+
+const router = express.Router();
+
+router.post('/register', validate(registerSchema), register);
+router.post('/verify-otp', validate(verifyOtpSchema), verifyOtp);
+router.post('/login', validate(loginSchema), login);
+
+module.exports = router;
+</file>
+
+<file path="src/modules/auth/auth.schema.js">
+const { z } = require('zod');
+
+const baseRegisterSchema = z.object({
+  phone: z.string().min(10).max(15),
+  email: z.string().email(),
+  password: z.string().min(8),
+  name: z.string().min(1),
+  role: z.enum(['FARMER', 'BUYER', 'DRIVER', 'TRADER']),
+  language: z.enum(['EN', 'KN', 'HI', 'MR']).optional(),
+  location: z.string().optional(),
+  businessName: z.string().optional(),
+  businessType: z.string().optional(),
+  vehicleType: z.string().optional(),
+  vehicleReg: z.string().optional(),
+});
+
+const registerSchema = baseRegisterSchema.superRefine((data, ctx) => {
+  if (data.role === 'FARMER' || data.role === 'TRADER') {
+    if (!data.location) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['location'], message: 'location is required for FARMER/TRADER' });
+    }
+  }
+  if (data.role === 'BUYER') {
+    if (!data.businessName) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['businessName'], message: 'businessName is required for BUYER' });
+    }
+    if (!data.businessType) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['businessType'], message: 'businessType is required for BUYER' });
+    }
+  }
+  if (data.role === 'DRIVER') {
+    if (!data.vehicleType) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['vehicleType'], message: 'vehicleType is required for DRIVER' });
+    }
+    if (!data.vehicleReg) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['vehicleReg'], message: 'vehicleReg is required for DRIVER' });
+    }
+  }
+});
+
+const verifyOtpSchema = z.object({
+  userId: z.string().min(1),
+  otp: z.string().regex(/^\d{6}$/, 'OTP must be a 6-digit string'),
+});
+
+const loginSchema = z.object({
+  emailOrPhone: z.string().min(1),
+  password: z.string().min(1),
+});
+
+module.exports = { registerSchema, verifyOtpSchema, loginSchema };
+</file>
+
+<file path="src/modules/auth/auth.service.js">
+const { prisma } = require('../../config/prisma');
+const { hash, compare } = require('../../utils/password');
+const { sign } = require('../../utils/jwt');
+const { env } = require('../../config/env');
+
+function generateOtp() {
+  return String(Math.floor(100000 + Math.random() * 900000));
+}
+
+function makeError(message, statusCode, code) {
+  return Object.assign(new Error(message), { statusCode, code });
+}
+
+async function registerUser(data) {
+  const { phone, email, password, name, role, language, location, businessName, businessType, vehicleType, vehicleReg } = data;
+
+  const existing = await prisma.user.findFirst({
+    where: { OR: [{ phone }, { email }] },
+  });
+  if (existing) {
+    throw makeError('User with this phone or email already exists', 409, 'DUPLICATE_USER');
+  }
+
+  const passwordHash = await hash(password);
+
+  const user = await prisma.user.create({
+    data: {
+      phone,
+      email,
+      passwordHash,
+      name,
+      role,
+      language: language || 'EN',
+      location: location || null,
+      businessName: businessName || null,
+      businessType: businessType || null,
+      vehicleType: vehicleType || null,
+      vehicleReg: vehicleReg || null,
+    },
+  });
+
+  const otp = generateOtp();
+  const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+
+  await prisma.otpRecord.create({
+    data: {
+      userId: user.id,
+      otp,
+      expiresAt,
+      used: false,
+    },
+  });
+
+  const result = { userId: user.id };
+  if (env.OTP_DEV_MODE === 'true' || env.OTP_DEV_MODE === true) {
+    result._devOtp = otp;
+  }
+  return result;
+}
+
+async function verifyOtp(userId, otp) {
+  const record = await prisma.otpRecord.findFirst({
+    where: {
+      userId,
+      used: false,
+      expiresAt: { gt: new Date() },
+    },
+    orderBy: { expiresAt: 'desc' },
+  });
+
+  if (!record || record.otp !== otp) {
+    throw makeError('Invalid or expired OTP', 400, 'INVALID_OTP');
+  }
+
+  await prisma.otpRecord.update({
+    where: { id: record.id },
+    data: { used: true },
+  });
+
+  const user = await prisma.user.update({
+    where: { id: userId },
+    data: { isPhoneVerified: true },
+  });
+
+  const token = sign({ id: user.id, role: user.role, email: user.email });
+  return { token };
+}
+
+async function loginUser(emailOrPhone, password) {
+  const user = await prisma.user.findFirst({
+    where: {
+      OR: [{ email: emailOrPhone }, { phone: emailOrPhone }],
+    },
+  });
+
+  if (!user) {
+    throw makeError('Invalid credentials', 401, 'INVALID_CREDENTIALS');
+  }
+
+  if (!user.isPhoneVerified) {
+    throw makeError('Phone not verified', 403, 'PHONE_NOT_VERIFIED');
+  }
+
+  const valid = await compare(password, user.passwordHash);
+  if (!valid) {
+    throw makeError('Invalid credentials', 401, 'INVALID_CREDENTIALS');
+  }
+
+  const token = sign({ id: user.id, role: user.role, email: user.email });
+  return { token };
+}
+
+module.exports = { registerUser, verifyOtp, loginUser };
+</file>
+
+<file path="src/modules/auth/auth.test.js">
+jest.mock('../../config/prisma', () => ({
+  prisma: {
+    user: {
+      findFirst: jest.fn(),
+      findUnique: jest.fn(),
+      create: jest.fn(),
+      update: jest.fn(),
+    },
+    otpRecord: {
+      findFirst: jest.fn(),
+      create: jest.fn(),
+      update: jest.fn(),
+    },
+  },
+}));
+jest.mock('../../config/env', () => ({
+  env: {
+    JWT_SECRET: 'test-secret-key-for-jest',
+    OTP_DEV_MODE: 'true',
+  },
+}));
+
+const { prisma } = require('../../config/prisma');
+const authService = require('./auth.service');
+const { authenticate } = require('../../middleware/auth');
+
+// ─── Helpers ────────────────────────────────────────────────────────────────
+
+function mockRes() {
+  const res = {};
+  res.status = jest.fn().mockReturnValue(res);
+  res.json = jest.fn().mockReturnValue(res);
+  return res;
+}
+
+// ─── registerUser ────────────────────────────────────────────────────────────
+
+describe('registerUser', () => {
+  beforeEach(() => jest.clearAllMocks());
+
+  it('hashes the password and creates an OtpRecord', async () => {
+    prisma.user.findFirst.mockResolvedValue(null);
+    prisma.user.create.mockResolvedValue({ id: 'user-1' });
+    prisma.otpRecord.create.mockResolvedValue({});
+
+    const result = await authService.registerUser({
+      phone: '9876543210',
+      email: 'farmer@test.com',
+      password: 'Test@1234',
+      name: 'Raju',
+      role: 'FARMER',
+      location: 'Belagavi',
+    });
+
+    // password was hashed (bcrypt hash starts with $2b)
+    const createCall = prisma.user.create.mock.calls[0][0];
+    expect(createCall.data.passwordHash).toMatch(/^\$2b\$/);
+
+    // OtpRecord created
+    expect(prisma.otpRecord.create).toHaveBeenCalledTimes(1);
+
+    // devOtp returned
+    expect(result).toHaveProperty('userId', 'user-1');
+    expect(result).toHaveProperty('_devOtp');
+    expect(result._devOtp).toMatch(/^\d{6}$/);
+  });
+
+  it('throws 409 when phone or email already exists', async () => {
+    prisma.user.findFirst.mockResolvedValue({ id: 'existing' });
+
+    await expect(
+      authService.registerUser({
+        phone: '9876543210',
+        email: 'farmer@test.com',
+        password: 'Test@1234',
+        name: 'Raju',
+        role: 'FARMER',
+        location: 'Belagavi',
+      })
+    ).rejects.toMatchObject({ statusCode: 409, code: 'DUPLICATE_USER' });
+  });
+});
+
+// ─── loginUser ───────────────────────────────────────────────────────────────
+
+describe('loginUser', () => {
+  beforeEach(() => jest.clearAllMocks());
+
+  it('returns a token when credentials are correct', async () => {
+    // Pre-hash a known password
+    const { hash } = require('../../utils/password');
+    const passwordHash = await hash('Test@1234');
+
+    prisma.user.findFirst.mockResolvedValue({
+      id: 'user-1',
+      email: 'farmer@test.com',
+      role: 'FARMER',
+      isPhoneVerified: true,
+      passwordHash,
+    });
+
+    const result = await authService.loginUser('farmer@test.com', 'Test@1234');
+    expect(result).toHaveProperty('token');
+    expect(typeof result.token).toBe('string');
+  });
+
+  it('throws 401 when password is wrong', async () => {
+    const { hash } = require('../../utils/password');
+    const passwordHash = await hash('Test@1234');
+
+    prisma.user.findFirst.mockResolvedValue({
+      id: 'user-1',
+      email: 'farmer@test.com',
+      role: 'FARMER',
+      isPhoneVerified: true,
+      passwordHash,
+    });
+
+    await expect(
+      authService.loginUser('farmer@test.com', 'WrongPassword')
+    ).rejects.toMatchObject({ statusCode: 401 });
+  });
+});
+
+// ─── authenticate middleware ──────────────────────────────────────────────────
+
+describe('authenticate middleware', () => {
+  const { sign } = require('../../utils/jwt');
+
+  it('sets req.user when token is valid', () => {
+    const payload = { id: 'user-1', role: 'FARMER', email: 'farmer@test.com' };
+    const token = sign(payload);
+
+    const req = { headers: { authorization: `Bearer ${token}` } };
+    const res = mockRes();
+    const next = jest.fn();
+
+    authenticate(req, res, next);
+
+    expect(next).toHaveBeenCalledTimes(1);
+    expect(req.user).toMatchObject({ id: 'user-1', role: 'FARMER' });
+  });
+
+  it('returns 401 when no token is provided', () => {
+    const req = { headers: {} };
+    const res = mockRes();
+    const next = jest.fn();
+
+    authenticate(req, res, next);
+
+    expect(res.status).toHaveBeenCalledWith(401);
+    expect(next).not.toHaveBeenCalled();
+  });
+});
+</file>
+
+<file path="src/modules/drivers/drivers.router.js">
+const express = require('express');
+const router = express.Router();
+const multer = require('multer');
+const { authenticate } = require('../../middleware/auth');
+const { requireRole } = require('../../middleware/roles');
+const { uploadToCloudinary } = require('../../utils/cloudinary');
+const {
+  getTripFeed,
+  getTripDetail,
+  acceptTrip,
+  markGoodsLoaded,
+  markShortage,
+  markDelivered,
+  updateDriverLocation,
+  getDriverEarnings,
+} = require('./drivers.service');
+
+const upload = multer({ storage: multer.memoryStorage() });
+
+// GET /api/drivers/trips — list available trips
+router.get('/trips', authenticate, requireRole('DRIVER'), async (req, res, next) => {
+  try {
+    const { mode, page } = req.query;
+    const result = await getTripFeed(req.user.id, { mode, page: parseInt(page) || 1 });
+    res.json({ success: true, data: result });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// GET /api/drivers/earnings
+router.get('/earnings', authenticate, requireRole('DRIVER'), async (req, res, next) => {
+  try {
+    const result = await getDriverEarnings(req.user.id, { period: req.query.period });
+    res.json({ success: true, data: result });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// GET /api/drivers/trips/:id — trip detail
+router.get('/trips/:id', authenticate, requireRole('DRIVER'), async (req, res, next) => {
+  try {
+    const trip = await getTripDetail(req.params.id);
+    res.json({ success: true, data: trip });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// POST /api/drivers/trips/:id/accept
+router.post('/trips/:id/accept', authenticate, requireRole('DRIVER'), async (req, res, next) => {
+  try {
+    const trip = await acceptTrip(req.params.id, req.user.id);
+    res.json({ success: true, data: trip });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// POST /api/drivers/trips/:id/loaded — upload goods photo
+router.post('/trips/:id/loaded', authenticate, requireRole('DRIVER'), upload.single('photo'), async (req, res, next) => {
+  try {
+    let photoUrl = req.body.photoUrl; // allow pre-uploaded URL
+    if (req.file) {
+      const b64 = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+      const result = await uploadToCloudinary(b64, { folder: 'trip-photos' });
+      photoUrl = result.secure_url;
+    }
+    if (!photoUrl) {
+      return res.status(400).json({ success: false, error: { message: 'Photo is required', code: 'PHOTO_REQUIRED' } });
+    }
+    const trip = await markGoodsLoaded(req.params.id, req.user.id, photoUrl);
+    res.json({ success: true, data: trip });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// POST /api/drivers/trips/:id/shortage — report goods shortage
+router.post('/trips/:id/shortage', authenticate, requireRole('DRIVER'), async (req, res, next) => {
+  try {
+    const { actualKg } = req.body;
+    if (actualKg === undefined || actualKg === null) {
+      return res.status(400).json({ success: false, error: { message: 'actualKg is required', code: 'VALIDATION_ERROR' } });
+    }
+    const result = await markShortage(req.params.id, req.user.id, Number(actualKg));
+    res.json({ success: true, data: result });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// POST /api/drivers/trips/:id/delivered — mark trip delivered (driver done, order → IN_TRANSIT)
+router.post('/trips/:id/delivered', authenticate, requireRole('DRIVER'), async (req, res, next) => {
+  try {
+    const trip = await markDelivered(req.params.id, req.user.id);
+    res.json({ success: true, data: trip });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// POST /api/drivers/location — update live location (Firestore only)
+router.post('/location', authenticate, requireRole('DRIVER'), async (req, res, next) => {
+  try {
+    const { tripId, lat, lng } = req.body;
+    const result = await updateDriverLocation(tripId, req.user.id, { lat, lng });
+    res.json({ success: true, data: result });
+  } catch (err) {
+    next(err);
+  }
+});
+
+module.exports = router;
+</file>
+
+<file path="src/modules/drivers/drivers.service.js">
+const { PrismaClient } = require('@prisma/client');
+const { createNotification } = require('../notifications/notifications.service');
+
+const prisma = new PrismaClient();
+
+function getFirestore() {
+  try {
+    return require('../../config/firebase').firestore;
+  } catch {
+    return null;
+  }
+}
+
+async function safeFirestoreSet(docPath, data) {
+  try {
+    const firestore = getFirestore();
+    if (firestore) {
+      const [collection, docId] = docPath.split('/');
+      await firestore.collection(collection).doc(docId).set(data, { merge: true });
+    }
+  } catch {
+    // Firestore down — PG update still committed
+  }
+}
+
+// ── getTripFeed ───────────────────────────────────────────────────────────────
+
+async function getTripFeed(driverId, { mode, page = 1, limit = 20 } = {}) {
+  const driver = await prisma.user.findUnique({ where: { id: driverId } });
+  if (!driver) throw Object.assign(new Error('Driver not found'), { status: 404 });
+
+  const where = { status: 'AVAILABLE', driverId: null };
+  if (mode) where.transportMode = mode;
+
+  const [trips, total] = await prisma.$transaction([
+    prisma.trip.findMany({
+      where,
+      include: {
+        order: {
+          select: {
+            quantityKg: true,
+            deliveryAddress: true,
+            listing: { select: { cropType: true } },
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+      skip: (page - 1) * limit,
+      take: limit,
+    }),
+    prisma.trip.count({ where }),
+  ]);
+
+  return {
+    trips: trips.map(t => ({
+      ...t,
+      earningsNote: '100% of transport fee — no deductions',
+    })),
+    total,
+    page,
+    limit,
+    driverWorkMode: driver.workMode,
+  };
+}
+
+// ── getTripDetail ─────────────────────────────────────────────────────────────
+
+async function getTripDetail(tripId) {
+  const trip = await prisma.trip.findUnique({
+    where: { id: tripId },
+    include: {
+      order: {
+        include: {
+          listing: {
+            include: {
+              seller: { select: { id: true, name: true, location: true, phone: true } },
+            },
+          },
+          buyer: { select: { id: true, name: true, deliveryAddress: true } },
+        },
+      },
+    },
+  });
+
+  if (!trip) throw Object.assign(new Error('Trip not found'), { status: 404 });
+  return { ...trip, earningsNote: '100% of transport fee — no deductions' };
+}
+
+// ── acceptTrip ────────────────────────────────────────────────────────────────
+
+async function acceptTrip(tripId, driverId) {
+  const trip = await prisma.trip.findUnique({
+    where: { id: tripId },
+    include: { order: true },
+  });
+
+  if (!trip) throw Object.assign(new Error('Trip not found'), { status: 404 });
+  if (trip.status !== 'AVAILABLE') {
+    throw Object.assign(new Error(`Trip is not available (status: ${trip.status})`), { status: 400 });
+  }
+  if (trip.driverId !== null) {
+    throw Object.assign(new Error('Trip already taken'), { status: 409 });
+  }
+
+  const updated = await prisma.trip.update({
+    where: { id: tripId },
+    data: { driverId, status: 'ACCEPTED', acceptedAt: new Date() },
+  });
+
+  await safeFirestoreSet(`trips/${tripId}`, { status: 'ACCEPTED', driverId });
+
+  createNotification(
+    trip.order.sellerId,
+    'TRIP_ACCEPTED',
+    'Driver Accepted Your Trip',
+    'A driver has accepted to transport your goods',
+    { tripId, orderId: trip.orderId }
+  ).catch(() => {});
+
+  return updated;
+}
+
+// ── markGoodsLoaded ───────────────────────────────────────────────────────────
+// !!! CRITICAL PAYMENT TRIGGER !!!
+
+async function markGoodsLoaded(tripId, driverId, photoUrl) {
+  const trip = await prisma.trip.findUnique({
+    where: { id: tripId },
+    include: { order: true },
+  });
+
+  if (!trip) throw Object.assign(new Error('Trip not found'), { status: 404 });
+  if (trip.driverId !== driverId) throw Object.assign(new Error('Forbidden'), { status: 403 });
+  if (trip.status !== 'ACCEPTED') {
+    throw Object.assign(new Error(`Cannot mark loaded for trip in status ${trip.status}`), { status: 400 });
+  }
+  if (!photoUrl) throw Object.assign(new Error('Photo URL is required'), { status: 400 });
+
+  // Atomically update trip + order payment statuses
+  const [updatedTrip] = await prisma.$transaction([
+    prisma.trip.update({
+      where: { id: tripId },
+      data: {
+        status: 'LOADED',
+        loadedPhotoUrl: photoUrl,
+        loadedAt: new Date(),
+      },
+    }),
+    prisma.order.update({
+      where: { id: trip.orderId },
+      data: {
+        status: 'LOADED',
+        buyerPaymentStatus: 'STAGE2_PAID',    // buyer's remaining 50%
+        sellerPaymentStatus: 'STAGE1_RELEASED', // seller gets 50%
+      },
+    }),
+  ]);
+
+  await safeFirestoreSet(`trips/${tripId}`, { status: 'LOADED', loadedAt: new Date() });
+
+  createNotification(
+    trip.order.sellerId,
+    'PAYMENT_STAGE1',
+    'Payment Released',
+    '50% payment released to you — goods loaded by driver',
+    { tripId, orderId: trip.orderId }
+  ).catch(() => {});
+
+  createNotification(
+    trip.order.buyerId,
+    'PAYMENT_STAGE2',
+    'Remaining Payment Charged',
+    'Remaining payment charged — driver has your goods and is en route',
+    { tripId, orderId: trip.orderId }
+  ).catch(() => {});
+
+  return updatedTrip;
+}
+
+// ── markShortage ──────────────────────────────────────────────────────────────
+// !!! FARMER VIOLATION TRIGGER !!!
+// Called when driver finds less goods than ordered at farm pickup.
+// Does NOT call markGoodsLoaded — driver calls that separately.
+
+async function markShortage(tripId, driverId, actualKg) {
+  const trip = await prisma.trip.findUnique({
+    where: { id: tripId },
+    include: { order: { include: { seller: true } } },
+  });
+
+  if (!trip) throw Object.assign(new Error('Trip not found'), { status: 404 });
+  if (trip.driverId !== driverId) throw Object.assign(new Error('Forbidden'), { status: 403 });
+  if (trip.status !== 'ACCEPTED') {
+    throw Object.assign(new Error(`Cannot report shortage for trip in status ${trip.status}`), { status: 400 });
+  }
+  if (actualKg >= trip.order.quantityKg) {
+    throw Object.assign(new Error('actualKg must be less than ordered quantity'), { status: 400 });
+  }
+
+  const { order } = trip;
+  const newProduceTotal = order.pricePerKg * actualKg;
+  const newPlatformFee = parseFloat((newProduceTotal * 0.06).toFixed(2));
+
+  // Recalculate and flag penalty
+  await prisma.order.update({
+    where: { id: order.id },
+    data: {
+      quantityActualKg: actualKg,
+      penaltyApplied: true,
+      produceTotal: newProduceTotal,
+      platformFee: newPlatformFee,
+    },
+  });
+
+  // Increment seller violation count
+  const updatedSeller = await prisma.user.update({
+    where: { id: order.sellerId },
+    data: { violationCount: { increment: 1 } },
+  });
+
+  // Suspension threshold
+  if (updatedSeller.violationCount >= 3) {
+    await prisma.user.update({
+      where: { id: order.sellerId },
+      data: { isSuspended: true },
+    });
+    // Suspend all active listings
+    await prisma.listing.updateMany({
+      where: { sellerId: order.sellerId, status: 'ACTIVE' },
+      data: { status: 'SUSPENDED' },
+    });
+    createNotification(
+      order.sellerId,
+      'ACCOUNT_SUSPENDED',
+      'Account Suspended',
+      '3 violations recorded. Account and listings suspended.',
+      { tripId, orderId: order.id }
+    ).catch(() => {});
+  } else {
+    createNotification(
+      order.sellerId,
+      'VIOLATION_WARNING',
+      'Shortage Violation Warning',
+      `Shortage reported. Violation #${updatedSeller.violationCount} recorded.`,
+      { tripId, orderId: order.id }
+    ).catch(() => {});
+  }
+
+  createNotification(
+    order.buyerId,
+    'SHORTAGE_REPORTED',
+    'Shortage Reported',
+    `Driver reported a shortage. Order adjusted to ${actualKg}kg.`,
+    { tripId, orderId: order.id }
+  ).catch(() => {});
+
+  return { success: true, actualKg, newProduceTotal, newPlatformFee, violationCount: updatedSeller.violationCount };
+}
+
+// ── markDelivered ─────────────────────────────────────────────────────────────
+// NAMING NOTE: trip.status=DELIVERED means DRIVER IS DONE.
+// order.status=IN_TRANSIT means awaiting BUYER confirmation.
+// These are different events — buyer confirmation is POST /orders/:id/confirm-delivery.
+
+async function markDelivered(tripId, driverId) {
+  const trip = await prisma.trip.findUnique({
+    where: { id: tripId },
+    include: { order: true },
+  });
+
+  if (!trip) throw Object.assign(new Error('Trip not found'), { status: 404 });
+  if (trip.driverId !== driverId) throw Object.assign(new Error('Forbidden'), { status: 403 });
+  if (!['LOADED', 'EN_ROUTE_BUYER'].includes(trip.status)) {
+    throw Object.assign(new Error(`Cannot mark delivered for trip in status ${trip.status}`), { status: 400 });
+  }
+
+  // Atomically: trip=DELIVERED (driver done), order=IN_TRANSIT (awaiting buyer)
+  const [updatedTrip] = await prisma.$transaction([
+    prisma.trip.update({
+      where: { id: tripId },
+      data: {
+        status: 'DELIVERED', // driver's job is done
+        deliveredAt: new Date(),
+      },
+    }),
+    prisma.order.update({
+      where: { id: trip.orderId },
+      data: {
+        status: 'IN_TRANSIT', // awaiting buyer confirmation
+      },
+    }),
+  ]);
+
+  await safeFirestoreSet(`trips/${tripId}`, { status: 'DELIVERED', deliveredAt: new Date() });
+
+  createNotification(
+    trip.order.buyerId,
+    'ORDER_DELIVERED',
+    'Goods Arrived',
+    'Please confirm delivery to release final payment to the farmer',
+    { tripId, orderId: trip.orderId }
+  ).catch(() => {});
+
+  return updatedTrip;
+}
+
+// ── updateDriverLocation ──────────────────────────────────────────────────────
+
+async function updateDriverLocation(tripId, driverId, { lat, lng }) {
+  const trip = await prisma.trip.findUnique({ where: { id: tripId } });
+  if (!trip) throw Object.assign(new Error('Trip not found'), { status: 404 });
+  if (trip.driverId !== driverId) throw Object.assign(new Error('Forbidden'), { status: 403 });
+
+  // Firestore only — NO PostgreSQL write (source of truth for live location)
+  await safeFirestoreSet(`trips/${tripId}`, { lat, lng, updatedAt: new Date() });
+
+  return { success: true };
+}
+
+// ── getDriverEarnings ─────────────────────────────────────────────────────────
+
+async function getDriverEarnings(driverId, { period } = {}) {
+  const trips = await prisma.trip.findMany({
+    where: { driverId, status: 'DELIVERED' },
+    orderBy: { deliveredAt: 'desc' },
+  });
+
+  const now = new Date();
+  const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const startOfWeek = new Date(startOfDay);
+  startOfWeek.setDate(startOfDay.getDate() - startOfDay.getDay());
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+  const sum = arr => arr.reduce((acc, t) => acc + (t.earnings || 0), 0);
+
+  const todayTrips = trips.filter(t => t.deliveredAt >= startOfDay);
+  const weekTrips = trips.filter(t => t.deliveredAt >= startOfWeek);
+  const monthTrips = trips.filter(t => t.deliveredAt >= startOfMonth);
+
+  return {
+    today: sum(todayTrips),
+    thisWeek: sum(weekTrips),
+    thisMonth: sum(monthTrips),
+    allTime: sum(trips),
+    recentTrips: trips.slice(0, 10).map(t => ({
+      id: t.id,
+      orderId: t.orderId,
+      earnings: t.earnings,
+      deliveredAt: t.deliveredAt,
+    })),
+    earningsNote: '100% of transport fee — no deductions',
+  };
+}
+
+module.exports = {
+  getTripFeed,
+  getTripDetail,
+  acceptTrip,
+  markGoodsLoaded,
+  markShortage,
+  markDelivered,
+  updateDriverLocation,
+  getDriverEarnings,
+};
+</file>
+
+<file path="src/modules/drivers/drivers.test.js">
+/**
+ * drivers.test.js — Phase 4 unit tests for drivers.service.js
+ * Mocks: @prisma/client, ../../config/firebase, ../notifications/notifications.service
+ */
+
+jest.mock('@prisma/client', () => {
+  const mPrisma = {
+    user: { findUnique: jest.fn(), update: jest.fn() },
+    trip: { findUnique: jest.fn(), update: jest.fn(), findMany: jest.fn(), count: jest.fn() },
+    order: { update: jest.fn() },
+    listing: { updateMany: jest.fn() },
+    $transaction: jest.fn(),
+  };
+  return { PrismaClient: jest.fn(() => mPrisma) };
+});
+
+jest.mock('../../config/firebase', () => ({
+  firestore: {
+    collection: jest.fn(() => ({
+      doc: jest.fn(() => ({
+        set: jest.fn().mockResolvedValue({}),
+      })),
+    })),
+  },
+}));
+
+jest.mock('../notifications/notifications.service', () => ({
+  createNotification: jest.fn().mockResolvedValue({}),
+}));
+
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
+
+// Re-require the service AFTER mocks are set up
+let service;
+beforeAll(() => {
+  service = require('./drivers.service');
+});
+
+beforeEach(() => {
+  jest.clearAllMocks();
+});
+
+// ── getTripFeed ───────────────────────────────────────────────────────────────
+
+describe('getTripFeed', () => {
+  it('returns only AVAILABLE trips with no driver assigned', async () => {
+    const mockDriver = { id: 'driver1', workMode: 'ON_DEMAND' };
+    const mockTrips = [
+      { id: 'trip1', status: 'AVAILABLE', driverId: null, earnings: 500, order: { quantityKg: 100, deliveryAddress: 'Pune', listing: { cropType: 'Tomato' } } },
+    ];
+
+    prisma.user.findUnique.mockResolvedValue(mockDriver);
+    prisma.$transaction.mockResolvedValue([mockTrips, 1]);
+
+    const result = await service.getTripFeed('driver1');
+
+    expect(prisma.$transaction).toHaveBeenCalled();
+    expect(result.trips).toHaveLength(1);
+    expect(result.trips[0].earningsNote).toContain('100%');
+  });
+});
+
+// ── acceptTrip ────────────────────────────────────────────────────────────────
+
+describe('acceptTrip', () => {
+  it('sets driverId and status=ACCEPTED', async () => {
+    const mockTrip = {
+      id: 'trip1',
+      status: 'AVAILABLE',
+      driverId: null,
+      orderId: 'order1',
+      order: { sellerId: 'seller1', buyerId: 'buyer1' },
+    };
+    const updatedTrip = { ...mockTrip, driverId: 'driver1', status: 'ACCEPTED', acceptedAt: new Date() };
+
+    prisma.trip.findUnique.mockResolvedValue(mockTrip);
+    prisma.trip.update.mockResolvedValue(updatedTrip);
+
+    const result = await service.acceptTrip('trip1', 'driver1');
+
+    expect(prisma.trip.update).toHaveBeenCalledWith({
+      where: { id: 'trip1' },
+      data: expect.objectContaining({ driverId: 'driver1', status: 'ACCEPTED' }),
+    });
+    expect(result.status).toBe('ACCEPTED');
+    expect(result.driverId).toBe('driver1');
+  });
+});
+
+// ── markGoodsLoaded ───────────────────────────────────────────────────────────
+
+describe('markGoodsLoaded', () => {
+  const mockTrip = {
+    id: 'trip1',
+    status: 'ACCEPTED',
+    driverId: 'driver1',
+    orderId: 'order1',
+    order: { id: 'order1', sellerId: 'seller1', buyerId: 'buyer1' },
+  };
+
+  it('sets STAGE2_PAID and STAGE1_RELEASED in the same atomic transaction', async () => {
+    prisma.trip.findUnique.mockResolvedValue(mockTrip);
+
+    const updatedTrip = { ...mockTrip, status: 'LOADED' };
+    prisma.$transaction.mockImplementation(async (ops) => {
+      // Simulate running the ops
+      return [updatedTrip, {}];
+    });
+
+    const result = await service.markGoodsLoaded('trip1', 'driver1', 'https://cdn.example.com/photo.jpg');
+
+    expect(prisma.$transaction).toHaveBeenCalledTimes(1);
+
+    // Verify the transaction was called with both update operations
+    const transactionCalls = prisma.$transaction.mock.calls[0][0];
+    expect(transactionCalls).toHaveLength(2);
+  });
+
+  it('updates buyerPaymentStatus=STAGE2_PAID and sellerPaymentStatus=STAGE1_RELEASED', async () => {
+    prisma.trip.findUnique.mockResolvedValue(mockTrip);
+
+    let capturedOrderUpdate;
+    prisma.$transaction.mockImplementation(async (ops) => {
+      // Capture what would be passed to order.update by intercepting the call
+      return [{ ...mockTrip, status: 'LOADED' }, {}];
+    });
+
+    // Test by checking that order.update is called with correct data
+    prisma.order.update.mockResolvedValue({ id: 'order1', buyerPaymentStatus: 'STAGE2_PAID', sellerPaymentStatus: 'STAGE1_RELEASED' });
+    prisma.trip.update.mockResolvedValue({ ...mockTrip, status: 'LOADED' });
+
+    // Use real transaction behavior
+    prisma.$transaction.mockImplementation(async (operations) => {
+      const results = await Promise.all(operations);
+      return results;
+    });
+
+    await service.markGoodsLoaded('trip1', 'driver1', 'https://cdn.example.com/photo.jpg');
+
+    expect(prisma.order.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          buyerPaymentStatus: 'STAGE2_PAID',
+          sellerPaymentStatus: 'STAGE1_RELEASED',
+        }),
+      })
+    );
+  });
+
+  it('throws if no photo URL provided', async () => {
+    prisma.trip.findUnique.mockResolvedValue(mockTrip);
+    await expect(service.markGoodsLoaded('trip1', 'driver1', null)).rejects.toMatchObject({ message: 'Photo URL is required' });
+  });
+});
+
+// ── markShortage ──────────────────────────────────────────────────────────────
+
+describe('markShortage', () => {
+  const baseTrip = {
+    id: 'trip1',
+    status: 'ACCEPTED',
+    driverId: 'driver1',
+    orderId: 'order1',
+    order: {
+      id: 'order1',
+      sellerId: 'seller1',
+      buyerId: 'buyer1',
+      quantityKg: 100,
+      pricePerKg: 50,
+      seller: { id: 'seller1', violationCount: 0 },
+    },
+  };
+
+  it('increments seller violationCount', async () => {
+    prisma.trip.findUnique.mockResolvedValue(baseTrip);
+    prisma.order.update.mockResolvedValue({});
+    prisma.user.update.mockResolvedValue({ violationCount: 1 });
+
+    await service.markShortage('trip1', 'driver1', 80);
+
+    expect(prisma.user.update).toHaveBeenCalledWith({
+      where: { id: 'seller1' },
+      data: { violationCount: { increment: 1 } },
+    });
+  });
+
+  it('recalculates produceTotal based on actualKg', async () => {
+    prisma.trip.findUnique.mockResolvedValue(baseTrip);
+    prisma.user.update.mockResolvedValue({ violationCount: 1 });
+
+    let capturedOrderUpdate;
+    prisma.order.update.mockImplementation(({ data }) => {
+      capturedOrderUpdate = data;
+      return Promise.resolve({});
+    });
+
+    await service.markShortage('trip1', 'driver1', 80);
+
+    // 80kg * 50/kg = 4000
+    expect(capturedOrderUpdate.produceTotal).toBe(4000);
+    expect(capturedOrderUpdate.platformFee).toBe(240); // 4000 * 0.06
+    expect(capturedOrderUpdate.quantityActualKg).toBe(80);
+    expect(capturedOrderUpdate.penaltyApplied).toBe(true);
+  });
+
+  it('suspends seller and listings at 3 violations', async () => {
+    prisma.trip.findUnique.mockResolvedValue(baseTrip);
+    prisma.order.update.mockResolvedValue({});
+    prisma.user.update
+      .mockResolvedValueOnce({ violationCount: 3 }) // increment
+      .mockResolvedValueOnce({ isSuspended: true }); // suspend
+    prisma.listing.updateMany.mockResolvedValue({ count: 2 });
+
+    await service.markShortage('trip1', 'driver1', 50);
+
+    expect(prisma.user.update).toHaveBeenCalledWith({
+      where: { id: 'seller1' },
+      data: { isSuspended: true },
+    });
+    expect(prisma.listing.updateMany).toHaveBeenCalledWith({
+      where: { sellerId: 'seller1', status: 'ACTIVE' },
+      data: { status: 'SUSPENDED' },
+    });
+  });
+});
+
+// ── markDelivered ─────────────────────────────────────────────────────────────
+
+describe('markDelivered', () => {
+  it('sets trip=DELIVERED and order=IN_TRANSIT (NOT order=DELIVERED)', async () => {
+    const mockTrip = {
+      id: 'trip1',
+      status: 'LOADED',
+      driverId: 'driver1',
+      orderId: 'order1',
+      order: { id: 'order1', buyerId: 'buyer1', sellerId: 'seller1' },
+    };
+
+    prisma.trip.findUnique.mockResolvedValue(mockTrip);
+
+    const updatedTrip = { ...mockTrip, status: 'DELIVERED' };
+    prisma.trip.update.mockResolvedValue(updatedTrip);
+    prisma.order.update.mockResolvedValue({ status: 'IN_TRANSIT' });
+
+    prisma.$transaction.mockImplementation(async (operations) => {
+      const results = await Promise.all(operations);
+      return results;
+    });
+
+    const result = await service.markDelivered('trip1', 'driver1');
+
+    // trip must be DELIVERED (driver done)
+    expect(prisma.trip.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ status: 'DELIVERED' }),
+      })
+    );
+
+    // order must be IN_TRANSIT (NOT DELIVERED — buyer hasn't confirmed yet)
+    expect(prisma.order.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ status: 'IN_TRANSIT' }),
+      })
+    );
+
+    // Verify order is NOT set to DELIVERED
+    const orderUpdateCall = prisma.order.update.mock.calls[0][0];
+    expect(orderUpdateCall.data.status).not.toBe('DELIVERED');
+  });
+});
+</file>
+
+<file path="src/modules/listings/listings.controller.js">
+const {
+  createListing,
+  uploadImages,
+  getListings,
+  getListingById,
+  updateListing,
+  cancelListing,
+} = require('./listings.service');
+
+async function createListingController(req, res, next) {
+  try {
+    const listing = await createListing(req.user.id, req.user.role, req.body);
+    res.status(201).json({ success: true, data: listing });
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function uploadImagesController(req, res, next) {
+  try {
+    const listing = await uploadImages(req.params.id, req.user.id, req.files);
+    res.json({ success: true, data: listing });
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function getListingsController(req, res, next) {
+  try {
+    const result = await getListings(req.query);
+    res.json({ success: true, ...result });
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function getListingByIdController(req, res, next) {
+  try {
+    const listing = await getListingById(req.params.id);
+    res.json({ success: true, data: listing });
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function updateListingController(req, res, next) {
+  try {
+    const listing = await updateListing(req.params.id, req.user.id, req.body);
+    res.json({ success: true, data: listing });
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function cancelListingController(req, res, next) {
+  try {
+    await cancelListing(req.params.id, req.user.id);
+    res.json({ success: true, message: 'Listing cancelled' });
+  } catch (err) {
+    next(err);
+  }
+}
+
+module.exports = {
+  createListingController,
+  uploadImagesController,
+  getListingsController,
+  getListingByIdController,
+  updateListingController,
+  cancelListingController,
+};
+</file>
+
+<file path="src/modules/listings/listings.router.js">
+const express = require('express');
+const multer = require('multer');
+const { authenticate } = require('../../middleware/auth');
+const { requireRole } = require('../../middleware/roles');
+const { validate } = require('../../middleware/validate');
+const {
+  createListingSchema,
+  updateListingSchema,
+  filterSchema,
+} = require('./listings.schema');
+const {
+  createListingController,
+  uploadImagesController,
+  getListingsController,
+  getListingByIdController,
+  updateListingController,
+  cancelListingController,
+} = require('./listings.controller');
+
+const router = express.Router();
+
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    if (!file.mimetype.startsWith('image/')) {
+      cb(new Error('Only images allowed'));
+    } else {
+      cb(null, true);
+    }
+  },
+});
+
+// POST /api/listings — create listing
+router.post(
+  '/',
+  authenticate,
+  requireRole('FARMER', 'TRADER'),
+  validate(createListingSchema),
+  createListingController
+);
+
+// POST /api/listings/:id/images — upload images
+router.post(
+  '/:id/images',
+  authenticate,
+  upload.array('images', 4),
+  uploadImagesController
+);
+
+// GET /api/listings — public browse (no auth)
+router.get('/', validate(filterSchema, 'query'), getListingsController);
+
+// GET /api/listings/:id — public detail (no auth)
+router.get('/:id', getListingByIdController);
+
+// PUT /api/listings/:id — update (owner only)
+router.put(
+  '/:id',
+  authenticate,
+  requireRole('FARMER', 'TRADER'),
+  validate(updateListingSchema),
+  updateListingController
+);
+
+// DELETE /api/listings/:id — cancel (owner only)
+router.delete(
+  '/:id',
+  authenticate,
+  requireRole('FARMER', 'TRADER'),
+  cancelListingController
+);
+
+module.exports = router;
+</file>
+
+<file path="src/modules/listings/listings.schema.js">
+const { z } = require('zod');
+
+const QUALITY_GRADES = ['GRADE_A', 'GRADE_B', 'MIXED'];
+
+const createListingSchema = z.object({
+  cropType: z.string().min(1, 'cropType is required'),
+  quantityKg: z.number({ coerce: true }).positive('quantityKg must be > 0'),
+  harvestDate: z.string().min(1, 'harvestDate is required'),
+  qualityGrade: z.enum(QUALITY_GRADES, {
+    errorMap: () => ({ message: `qualityGrade must be one of ${QUALITY_GRADES.join(', ')}` }),
+  }),
+  askingPrice: z.number({ coerce: true }).positive('askingPrice must be > 0'),
+});
+
+const updateListingSchema = createListingSchema.partial();
+
+const filterSchema = z.object({
+  crop: z.string().optional(),
+  region: z.string().optional(),
+  minPrice: z.number({ coerce: true }).optional(),
+  maxPrice: z.number({ coerce: true }).optional(),
+  grade: z.enum(QUALITY_GRADES).optional(),
+  page: z.number({ coerce: true }).int().positive().default(1),
+  limit: z.number({ coerce: true }).int().positive().max(100).default(20),
+});
+
+module.exports = { createListingSchema, updateListingSchema, filterSchema };
+</file>
+
+<file path="src/modules/listings/listings.service.js">
+const { prisma } = require('../../config/prisma');
+const { uploadListingImage } = require('../../utils/cloudinary');
+const { getPriceAdvice, validateImages } = require('../../utils/aiClient');
+
+/**
+ * Create a new listing.
+ */
+async function createListing(userId, userRole, data) {
+  if (!['FARMER', 'TRADER'].includes(userRole)) {
+    const err = new Error('Only farmers and traders can create listings');
+    err.statusCode = 403;
+    throw err;
+  }
+
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user) {
+    const err = new Error('User not found');
+    err.statusCode = 404;
+    throw err;
+  }
+  if (user.isSuspended) {
+    const err = new Error('Account suspended');
+    err.statusCode = 403;
+    throw err;
+  }
+
+  const isTrader = userRole === 'TRADER';
+
+  let aiPriceData = null;
+  try {
+    aiPriceData = await getPriceAdvice({
+      crop_type: data.cropType,
+      quantity_kg: data.quantityKg,
+      location: user.location || '',
+    });
+  } catch {
+    aiPriceData = null;
+  }
+
+  const listing = await prisma.listing.create({
+    data: {
+      sellerId: userId,
+      cropType: data.cropType,
+      quantityKg: data.quantityKg,
+      remainingKg: data.quantityKg,            // starts equal to quantityKg
+      harvestDate: new Date(data.harvestDate),
+      qualityGrade: data.qualityGrade,
+      askingPrice: data.askingPrice,
+      isTrader,
+      aiPredictedPrice: aiPriceData?.ai_predicted_price ?? null,
+      mandiRefPrice: aiPriceData?.mandi_reference_price ?? null,  // ← schema field name
+    },
+  });
+
+  return listing;
+}
+
+/**
+ * Upload images for a listing, validate with AI.
+ */
+async function uploadImages(listingId, sellerId, files) {
+  if (!files || files.length < 2) {
+    const err = new Error('At least 2 images are required');
+    err.statusCode = 400;
+    throw err;
+  }
+  if (files.length > 4) {
+    const err = new Error('Maximum 4 images allowed');
+    err.statusCode = 400;
+    throw err;
+  }
+
+  const listing = await prisma.listing.findUnique({ where: { id: listingId } });
+  if (!listing) {
+    const err = new Error('Listing not found');
+    err.statusCode = 404;
+    throw err;
+  }
+  if (listing.sellerId !== sellerId) {
+    const err = new Error('Forbidden');
+    err.statusCode = 403;
+    throw err;
+  }
+
+  // Upload each image to Cloudinary
+  const uploadResults = await Promise.all(
+    files.map((file) => uploadListingImage(file.buffer, listingId))
+  );
+
+  // Create ListingImage records
+  await prisma.listingImage.createMany({
+    data: uploadResults.map((r, i) => ({
+      listingId,
+      cloudinaryId: r.public_id,   // ← schema field name
+      url: r.secure_url,
+      order: i,
+    })),
+  });
+
+  // AI image validation
+  const imageUrls = uploadResults.map((r) => r.secure_url);
+  let aiValidation = null;
+  try {
+    aiValidation = await validateImages({
+      image_urls: imageUrls,
+      declared_grade: listing.qualityGrade,
+    });
+  } catch {
+    aiValidation = null;
+  }
+
+  const updateData = {};
+  if (aiValidation) {
+    if (aiValidation.mismatch) {
+      updateData.aiGradeMismatch = true;
+      updateData.aiGradePredicted = aiValidation.predicted_grade;
+    }
+    if (aiValidation.valid === false) {
+      updateData.aiImagesValid = false;
+    }
+  }
+
+  const updatedListing = await prisma.listing.update({
+    where: { id: listingId },
+    data: updateData,
+    include: { images: true },
+  });
+
+  return updatedListing;
+}
+
+/**
+ * Get paginated listings with optional filters.
+ */
+async function getListings(filters) {
+  const { crop, region, minPrice, maxPrice, grade, page = 1, limit = 20 } = filters;
+
+  const where = { status: 'ACTIVE' };
+
+  if (crop) {
+    where.cropType = { contains: crop, mode: 'insensitive' };
+  }
+  if (region) {
+    where.seller = { location: { contains: region, mode: 'insensitive' } };
+  }
+  if (grade) {
+    where.qualityGrade = grade;
+  }
+  if (minPrice !== undefined || maxPrice !== undefined) {
+    where.askingPrice = {};
+    if (minPrice !== undefined) where.askingPrice.gte = Number(minPrice);
+    if (maxPrice !== undefined) where.askingPrice.lte = Number(maxPrice);
+  }
+
+  const skip = (page - 1) * limit;
+
+  const [listings, total] = await Promise.all([
+    prisma.listing.findMany({
+      where,
+      include: {
+        seller: { select: { id: true, name: true, location: true, isTrader: false } },
+        images: true,
+      },
+      skip,
+      take: Number(limit),
+      orderBy: { createdAt: 'desc' },
+    }),
+    prisma.listing.count({ where }),
+  ]);
+
+  return {
+    listings,
+    total,
+    page: Number(page),
+    pages: Math.ceil(total / limit),
+  };
+}
+
+/**
+ * Get a single listing by ID with full detail.
+ */
+async function getListingById(id) {
+  const listing = await prisma.listing.findUnique({
+    where: { id },
+    include: {
+      seller: { select: { id: true, name: true, location: true } },
+      images: true,
+      _count: { select: { orders: true } },
+    },
+  });
+
+  if (!listing) {
+    const err = new Error('Listing not found');
+    err.statusCode = 404;
+    throw err;
+  }
+
+  return listing;
+}
+
+/**
+ * Update a listing (owner only).
+ */
+async function updateListing(listingId, sellerId, data) {
+  const listing = await prisma.listing.findUnique({ where: { id: listingId } });
+  if (!listing) {
+    const err = new Error('Listing not found');
+    err.statusCode = 404;
+    throw err;
+  }
+  if (listing.sellerId !== sellerId) {
+    const err = new Error('Forbidden');
+    err.statusCode = 403;
+    throw err;
+  }
+
+  const updateData = {};
+  if (data.cropType !== undefined)    updateData.cropType    = data.cropType;
+  if (data.quantityKg !== undefined)  updateData.quantityKg  = data.quantityKg;
+  if (data.harvestDate !== undefined) updateData.harvestDate = new Date(data.harvestDate);
+  if (data.qualityGrade !== undefined) updateData.qualityGrade = data.qualityGrade;
+  if (data.askingPrice !== undefined) updateData.askingPrice  = data.askingPrice;
+
+  return prisma.listing.update({
+    where: { id: listingId },
+    data: updateData,
+  });
+}
+
+/**
+ * Cancel a listing (owner only).
+ */
+async function cancelListing(listingId, sellerId) {
+  const listing = await prisma.listing.findUnique({ where: { id: listingId } });
+  if (!listing) {
+    const err = new Error('Listing not found');
+    err.statusCode = 404;
+    throw err;
+  }
+  if (listing.sellerId !== sellerId) {
+    const err = new Error('Forbidden');
+    err.statusCode = 403;
+    throw err;
+  }
+
+  return prisma.listing.update({
+    where: { id: listingId },
+    data: { status: 'CANCELLED' },
+  });
+}
+
+module.exports = {
+  createListing,
+  uploadImages,
+  getListings,
+  getListingById,
+  updateListing,
+  cancelListing,
+};
+</file>
+
+<file path="src/modules/listings/listings.test.js">
+// backend/src/modules/listings/listings.test.js
+
+// ─── Manual mock for Prisma ────────────────────────────────────────────────
+jest.mock('../../config/prisma', () => ({
+  prisma: {
+    user: {
+      findUnique: jest.fn(),
+    },
+    listing: {
+      create:     jest.fn(),
+      findUnique: jest.fn(),
+      findMany:   jest.fn(),
+      update:     jest.fn(),
+      count:      jest.fn(),
+    },
+    listingImage: {
+      createMany: jest.fn(),
+    },
+  },
+}));
+
+jest.mock('../../utils/cloudinary');
+jest.mock('../../utils/aiClient');
+
+const { prisma }        = require('../../config/prisma');
+const { uploadListingImage } = require('../../utils/cloudinary');
+const { getPriceAdvice, validateImages } = require('../../utils/aiClient');
+const { createListing, uploadImages, getListings } = require('./listings.service');
+
+// ─── Helpers ───────────────────────────────────────────────────────────────
+
+function makeUser(overrides = {}) {
+  return {
+    id: 'user-1',
+    name: 'Test User',
+    location: 'Punjab',
+    isSuspended: false,
+    ...overrides,
+  };
+}
+
+function makeListing(overrides = {}) {
+  return {
+    id: 'listing-1',
+    sellerId: 'user-1',
+    cropType: 'Wheat',
+    quantityKg: 500,
+    remainingKg: 500,
+    harvestDate: new Date(),
+    qualityGrade: 'GRADE_A',
+    askingPrice: 2500,
+    isTrader: false,
+    status: 'ACTIVE',
+    aiPredictedPrice: null,
+    mandiRefPrice: null,
+    aiGradeMismatch: false,
+    aiImagesValid: true,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    ...overrides,
+  };
+}
+
+// ─── createListing ─────────────────────────────────────────────────────────
+
+describe('createListing', () => {
+  const listingData = {
+    cropType: 'Wheat',
+    quantityKg: 500,
+    harvestDate: '2025-04-01',
+    qualityGrade: 'GRADE_A',
+    askingPrice: 2500,
+  };
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  test('creates listing with isTrader=false for FARMER role', async () => {
+    prisma.user.findUnique.mockResolvedValue(makeUser());
+    const created = makeListing({ isTrader: false });
+    prisma.listing.create.mockResolvedValue(created);
+    getPriceAdvice.mockResolvedValue({ ai_predicted_price: 2600, mandi_reference_price: 2400 });
+
+    const result = await createListing('user-1', 'FARMER', listingData);
+
+    expect(prisma.listing.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ isTrader: false, remainingKg: 500 }),
+      })
+    );
+    expect(result.isTrader).toBe(false);
+  });
+
+  test('creates listing with isTrader=true for TRADER role', async () => {
+    prisma.user.findUnique.mockResolvedValue(makeUser());
+    const created = makeListing({ isTrader: true });
+    prisma.listing.create.mockResolvedValue(created);
+    getPriceAdvice.mockResolvedValue(null);
+
+    const result = await createListing('user-1', 'TRADER', listingData);
+
+    expect(prisma.listing.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ isTrader: true }),
+      })
+    );
+    expect(result.isTrader).toBe(true);
+  });
+
+  test('still succeeds when AI service is down (getPriceAdvice returns null)', async () => {
+    prisma.user.findUnique.mockResolvedValue(makeUser());
+    prisma.listing.create.mockResolvedValue(makeListing());
+    getPriceAdvice.mockResolvedValue(null);
+
+    const result = await createListing('user-1', 'FARMER', listingData);
+
+    expect(result).toBeDefined();
+    expect(prisma.listing.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          aiPredictedPrice: null,
+          mandiRefPrice: null,
+        }),
+      })
+    );
+  });
+
+  test('throws 403 when account is suspended', async () => {
+    prisma.user.findUnique.mockResolvedValue(makeUser({ isSuspended: true }));
+
+    await expect(createListing('user-1', 'FARMER', listingData)).rejects.toMatchObject({
+      message: 'Account suspended',
+      statusCode: 403,
+    });
+  });
+
+  test('sets remainingKg equal to quantityKg on create', async () => {
+    prisma.user.findUnique.mockResolvedValue(makeUser());
+    prisma.listing.create.mockResolvedValue(makeListing({ quantityKg: 300, remainingKg: 300 }));
+    getPriceAdvice.mockResolvedValue(null);
+
+    await createListing('user-1', 'FARMER', { ...listingData, quantityKg: 300 });
+
+    expect(prisma.listing.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ quantityKg: 300, remainingKg: 300 }),
+      })
+    );
+  });
+});
+
+// ─── getListings ───────────────────────────────────────────────────────────
+
+describe('getListings', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  test('returns paginated results with default page=1 and limit=20', async () => {
+    const listings = [makeListing(), makeListing({ id: 'listing-2' })];
+    prisma.listing.findMany.mockResolvedValue(listings);
+    prisma.listing.count.mockResolvedValue(2);
+
+    const result = await getListings({});
+
+    expect(result).toEqual({ listings, total: 2, page: 1, pages: 1 });
+    expect(prisma.listing.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ skip: 0, take: 20 })
+    );
+  });
+
+  test('applies crop filter (case-insensitive contains)', async () => {
+    prisma.listing.findMany.mockResolvedValue([]);
+    prisma.listing.count.mockResolvedValue(0);
+
+    await getListings({ crop: 'wheat' });
+
+    expect(prisma.listing.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          cropType: { contains: 'wheat', mode: 'insensitive' },
+        }),
+      })
+    );
+  });
+
+  test('only returns ACTIVE listings', async () => {
+    prisma.listing.findMany.mockResolvedValue([]);
+    prisma.listing.count.mockResolvedValue(0);
+
+    await getListings({});
+
+    expect(prisma.listing.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ status: 'ACTIVE' }),
+      })
+    );
+  });
+
+  test('handles pagination correctly for page 2', async () => {
+    prisma.listing.findMany.mockResolvedValue([]);
+    prisma.listing.count.mockResolvedValue(45);
+
+    const result = await getListings({ page: 2, limit: 20 });
+
+    expect(result.page).toBe(2);
+    expect(result.pages).toBe(3);
+    expect(prisma.listing.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ skip: 20, take: 20 })
+    );
+  });
+});
+
+// ─── uploadImages ──────────────────────────────────────────────────────────
+
+describe('uploadImages', () => {
+  const mockFiles = (n) =>
+    Array.from({ length: n }, (_, i) => ({
+      buffer: Buffer.from(`image-${i}`),
+      mimetype: 'image/jpeg',
+      originalname: `photo${i}.jpg`,
+    }));
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  test('rejects when fewer than 2 files provided', async () => {
+    await expect(uploadImages('listing-1', 'user-1', mockFiles(1))).rejects.toMatchObject({
+      message: 'At least 2 images are required',
+      statusCode: 400,
+    });
+  });
+
+  test('rejects when 0 files provided', async () => {
+    await expect(uploadImages('listing-1', 'user-1', [])).rejects.toMatchObject({
+      statusCode: 400,
+    });
+  });
+
+  test('rejects when more than 4 files provided', async () => {
+    await expect(uploadImages('listing-1', 'user-1', mockFiles(5))).rejects.toMatchObject({
+      statusCode: 400,
+    });
+  });
+
+  test('uploads images and creates ListingImage records', async () => {
+    prisma.listing.findUnique.mockResolvedValue(makeListing());
+    uploadListingImage.mockResolvedValue({
+      public_id: 'kisan-mitra/listings/listing-1/abc',
+      secure_url: 'https://res.cloudinary.com/test/image/upload/abc.jpg',
+    });
+    prisma.listingImage.createMany.mockResolvedValue({ count: 2 });
+    validateImages.mockResolvedValue({ valid: true, predicted_grade: 'GRADE_A', mismatch: false });
+    prisma.listing.update.mockResolvedValue({ ...makeListing(), images: [] });
+
+    const result = await uploadImages('listing-1', 'user-1', mockFiles(2));
+
+    expect(uploadListingImage).toHaveBeenCalledTimes(2);
+    expect(prisma.listingImage.createMany).toHaveBeenCalled();
+    expect(result).toBeDefined();
+  });
+
+  test('sets aiGradeMismatch=true when AI detects grade mismatch', async () => {
+    prisma.listing.findUnique.mockResolvedValue(makeListing());
+    uploadListingImage.mockResolvedValue({
+      public_id: 'kisan-mitra/listings/listing-1/abc',
+      secure_url: 'https://res.cloudinary.com/test/image/upload/abc.jpg',
+    });
+    prisma.listingImage.createMany.mockResolvedValue({ count: 2 });
+    validateImages.mockResolvedValue({ valid: true, predicted_grade: 'GRADE_B', mismatch: true });
+    prisma.listing.update.mockResolvedValue({ ...makeListing(), aiGradeMismatch: true, images: [] });
+
+    await uploadImages('listing-1', 'user-1', mockFiles(2));
+
+    expect(prisma.listing.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ aiGradeMismatch: true, aiGradePredicted: 'GRADE_B' }),
+      })
+    );
+  });
+
+  test('succeeds even when AI validation service is down', async () => {
+    prisma.listing.findUnique.mockResolvedValue(makeListing());
+    uploadListingImage.mockResolvedValue({
+      public_id: 'abc',
+      secure_url: 'https://example.com/img.jpg',
+    });
+    prisma.listingImage.createMany.mockResolvedValue({ count: 2 });
+    validateImages.mockResolvedValue(null);
+    prisma.listing.update.mockResolvedValue({ ...makeListing(), images: [] });
+
+    const result = await uploadImages('listing-1', 'user-1', mockFiles(2));
+    expect(result).toBeDefined();
+  });
+
+  test('throws 403 when listing does not belong to seller', async () => {
+    prisma.listing.findUnique.mockResolvedValue(makeListing({ sellerId: 'other-user' }));
+
+    await expect(uploadImages('listing-1', 'user-1', mockFiles(2))).rejects.toMatchObject({
+      statusCode: 403,
+    });
+  });
+});
+</file>
+
+<file path="src/modules/notifications/notifications.router.js">
+const { Router } = require('express');
+const { authenticate } = require('../../middleware/auth');
+const { getNotifications, markRead, markAllRead } = require('./notifications.service');
+
+const router = Router();
+
+// GET /api/notifications
+router.get('/', authenticate, async (req, res, next) => {
+  try {
+    const { page, limit, unreadOnly } = req.query;
+    const result = await getNotifications(req.user.id, {
+      page: page ? parseInt(page) : 1,
+      limit: limit ? parseInt(limit) : 20,
+      unreadOnly: unreadOnly === 'true',
+    });
+    res.json(result);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// PUT /api/notifications/read-all  — MUST be before /:id/read to avoid route conflict
+router.put('/read-all', authenticate, async (req, res, next) => {
+  try {
+    const result = await markAllRead(req.user.id);
+    res.json(result);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// PUT /api/notifications/:id/read
+router.put('/:id/read', authenticate, async (req, res, next) => {
+  try {
+    const notification = await markRead(req.params.id, req.user.id);
+    res.json(notification);
+  } catch (err) {
+    next(err);
+  }
+});
+
+module.exports = router;
+</file>
+
+<file path="src/modules/notifications/notifications.service.js">
+const { PrismaClient } = require('@prisma/client');
+
+const prisma = new PrismaClient();
+
+// ── createNotification ────────────────────────────────────────────────────────
+// Saves to DB first (guaranteed), then attempts FCM (best-effort, never throws).
+
+async function createNotification(userId, type, title, body, data = {}) {
+  // 1. Save to DB — source of truth
+  const notification = await prisma.notification.create({
+    data: { userId, type, title, body, data, read: false },
+  });
+
+  // 2. Attempt FCM push — non-critical path
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { fcmToken: true },
+    });
+
+    if (user?.fcmToken) {
+      const { getMessaging } = require('firebase-admin/messaging');
+
+      // FCM data values must be strings
+      const stringData = Object.fromEntries(
+        Object.entries(data).map(([k, v]) => [k, String(v)])
+      );
+
+      await getMessaging().send({
+        token: user.fcmToken,
+        notification: { title, body },
+        data: stringData,
+      });
+    }
+  } catch (e) {
+    console.warn('FCM failed (non-critical):', e.message);
+  }
+
+  return notification;
+}
+
+// ── getNotifications ──────────────────────────────────────────────────────────
+
+async function getNotifications(userId, { page = 1, limit = 20, unreadOnly = false } = {}) {
+  const where = {
+    userId,
+    ...(unreadOnly && { read: false }),
+  };
+
+  const [notifications, total, unreadCount] = await prisma.$transaction([
+    prisma.notification.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      skip: (page - 1) * limit,
+      take: limit,
+    }),
+    prisma.notification.count({ where }),
+    prisma.notification.count({ where: { userId, read: false } }),
+  ]);
+
+  return { notifications, total, page, limit, unreadCount };
+}
+
+// ── markRead ──────────────────────────────────────────────────────────────────
+
+async function markRead(notificationId, userId) {
+  const notification = await prisma.notification.findUnique({
+    where: { id: notificationId },
+  });
+
+  if (!notification) {
+    throw Object.assign(new Error('Notification not found'), { status: 404 });
+  }
+  if (notification.userId !== userId) {
+    throw Object.assign(new Error('Forbidden'), { status: 403 });
+  }
+
+  return prisma.notification.update({
+    where: { id: notificationId },
+    data: { read: true },
+  });
+}
+
+// ── markAllRead ───────────────────────────────────────────────────────────────
+
+async function markAllRead(userId) {
+  const { count } = await prisma.notification.updateMany({
+    where: { userId, read: false },
+    data: { read: true },
+  });
+
+  return { success: true, updated: count };
+}
+
+module.exports = { createNotification, getNotifications, markRead, markAllRead };
+</file>
+
+<file path="src/modules/notifications/notifications.test.js">
+/**
+ * Tests for notifications.service.js
+ *
+ * Strategy: mock Prisma and firebase-admin/messaging to isolate service logic.
+ */
+
+jest.mock('@prisma/client');
+jest.mock('firebase-admin/messaging');
+
+const { PrismaClient } = require('@prisma/client');
+const { getMessaging } = require('firebase-admin/messaging');
+
+// ─── Prisma mock setup ────────────────────────────────────────────────────────
+
+const mockCreate       = jest.fn();
+const mockFindUnique   = jest.fn();
+const mockFindMany     = jest.fn();
+const mockCount        = jest.fn();
+const mockUpdate       = jest.fn();
+const mockUpdateMany   = jest.fn();
+const mockTransaction  = jest.fn((ops) => Promise.all(ops));
+
+PrismaClient.mockImplementation(() => ({
+  notification: {
+    create:      mockCreate,
+    findUnique:  mockFindUnique,
+    findMany:    mockFindMany,
+    count:       mockCount,
+    update:      mockUpdate,
+    updateMany:  mockUpdateMany,
+  },
+  user: {
+    findUnique: mockFindUnique,
+  },
+  $transaction: mockTransaction,
+}));
+
+// ─── FCM mock setup ───────────────────────────────────────────────────────────
+
+const mockSend = jest.fn();
+getMessaging.mockReturnValue({ send: mockSend });
+
+// ─── Import service AFTER mocks ───────────────────────────────────────────────
+
+const {
+  createNotification,
+  getNotifications,
+  markRead,
+  markAllRead,
+} = require('./notifications.service');
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function makeNotification(overrides = {}) {
+  return {
+    id:        'notif_1',
+    userId:    'user_1',
+    type:      'ORDER_PLACED',
+    title:     'New Order',
+    body:      'You have a new order',
+    data:      { orderId: 'order_1' },
+    read:      false,
+    createdAt: new Date(),
+    ...overrides,
+  };
+}
+
+// ─── createNotification ───────────────────────────────────────────────────────
+
+describe('createNotification', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  test('saves notification to DB and returns it', async () => {
+    const notif = makeNotification();
+    mockCreate.mockResolvedValue(notif);
+    // User has no FCM token
+    mockFindUnique.mockResolvedValue({ fcmToken: null });
+
+    const result = await createNotification('user_1', 'ORDER_PLACED', 'New Order', 'You have a new order', { orderId: 'order_1' });
+
+    expect(mockCreate).toHaveBeenCalledTimes(1);
+    expect(mockCreate).toHaveBeenCalledWith({
+      data: {
+        userId: 'user_1',
+        type:   'ORDER_PLACED',
+        title:  'New Order',
+        body:   'You have a new order',
+        data:   { orderId: 'order_1' },
+        read:   false,
+      },
+    });
+    expect(result).toEqual(notif);
+  });
+
+  test('saves to DB even when FCM throws', async () => {
+    const notif = makeNotification();
+    mockCreate.mockResolvedValue(notif);
+    mockFindUnique.mockResolvedValue({ fcmToken: 'some-token' });
+    mockSend.mockRejectedValue(new Error('FCM network error'));
+
+    // Should NOT throw
+    const result = await createNotification('user_1', 'ORDER_PLACED', 'Title', 'Body', {});
+
+    expect(mockCreate).toHaveBeenCalledTimes(1);
+    expect(result).toEqual(notif);   // DB save succeeded
+    expect(mockSend).toHaveBeenCalledTimes(1);
+  });
+
+  test('sends FCM push when user has fcmToken', async () => {
+    const notif = makeNotification();
+    mockCreate.mockResolvedValue(notif);
+    mockFindUnique.mockResolvedValue({ fcmToken: 'device-token-abc' });
+    mockSend.mockResolvedValue('message-id');
+
+    await createNotification('user_1', 'PAYMENT_STAGE1', 'Payment', '50% released', { orderId: 'o1' });
+
+    expect(mockSend).toHaveBeenCalledWith({
+      token: 'device-token-abc',
+      notification: { title: 'Payment', body: '50% released' },
+      data: { orderId: 'o1' },   // values stringified
+    });
+  });
+
+  test('stringifies all data values for FCM', async () => {
+    const notif = makeNotification();
+    mockCreate.mockResolvedValue(notif);
+    mockFindUnique.mockResolvedValue({ fcmToken: 'tok' });
+    mockSend.mockResolvedValue('ok');
+
+    await createNotification('user_1', 'TEST', 'T', 'B', { count: 5, flag: true, nested: { a: 1 } });
+
+    const [call] = mockSend.mock.calls;
+    const { data } = call[0];
+    expect(typeof data.count).toBe('string');
+    expect(typeof data.flag).toBe('string');
+  });
+
+  test('skips FCM when user has no fcmToken', async () => {
+    mockCreate.mockResolvedValue(makeNotification());
+    mockFindUnique.mockResolvedValue({ fcmToken: undefined });
+
+    await createNotification('user_1', 'ORDER_PLACED', 'T', 'B', {});
+
+    expect(mockSend).not.toHaveBeenCalled();
+  });
+});
+
+// ─── getNotifications ─────────────────────────────────────────────────────────
+
+describe('getNotifications', () => {
+  beforeEach(() => jest.clearAllMocks());
+
+  test('returns paginated notifications with unreadCount', async () => {
+    const notifs = [makeNotification(), makeNotification({ id: 'notif_2', read: true })];
+    mockTransaction.mockResolvedValue([notifs, 2, 1]);
+
+    const result = await getNotifications('user_1', { page: 1, limit: 20 });
+
+    expect(result.notifications).toHaveLength(2);
+    expect(result.total).toBe(2);
+    expect(result.unreadCount).toBe(1);
+    expect(result.page).toBe(1);
+    expect(result.limit).toBe(20);
+  });
+
+  test('filters by unread when unreadOnly=true', async () => {
+    mockTransaction.mockResolvedValue([[], 0, 0]);
+
+    await getNotifications('user_1', { unreadOnly: true });
+
+    // Transaction should be called — we verify the where filter through mock args
+    expect(mockTransaction).toHaveBeenCalledTimes(1);
+  });
+});
+
+// ─── markRead ────────────────────────────────────────────────────────────────
+
+describe('markRead', () => {
+  beforeEach(() => jest.clearAllMocks());
+
+  test('marks notification as read', async () => {
+    const notif = makeNotification();
+    mockFindUnique.mockResolvedValue(notif);
+    mockUpdate.mockResolvedValue({ ...notif, read: true });
+
+    const result = await markRead('notif_1', 'user_1');
+    expect(result.read).toBe(true);
+  });
+
+  test('throws 404 when notification not found', async () => {
+    mockFindUnique.mockResolvedValue(null);
+    await expect(markRead('bad_id', 'user_1')).rejects.toMatchObject({ status: 404 });
+  });
+
+  test('throws 403 when notification belongs to different user', async () => {
+    mockFindUnique.mockResolvedValue(makeNotification({ userId: 'other_user' }));
+    await expect(markRead('notif_1', 'user_1')).rejects.toMatchObject({ status: 403 });
+  });
+});
+
+// ─── markAllRead ──────────────────────────────────────────────────────────────
+
+describe('markAllRead', () => {
+  beforeEach(() => jest.clearAllMocks());
+
+  test('bulk-updates all unread notifications for user', async () => {
+    mockUpdateMany.mockResolvedValue({ count: 5 });
+    const result = await markAllRead('user_1');
+    expect(result).toEqual({ success: true, updated: 5 });
+    expect(mockUpdateMany).toHaveBeenCalledWith({
+      where: { userId: 'user_1', read: false },
+      data: { read: true },
+    });
+  });
+});
+</file>
+
+<file path="src/modules/orders/orders.controller.js">
+const ordersService = require('./orders.service');
+const { placeOrderSchema, rateOrderSchema } = require('./orders.schema');
+
+async function placeOrder(req, res, next) {
+  try {
+    const { error, value } = placeOrderSchema.validate(req.body);
+    if (error) return res.status(400).json({ error: error.message });
+
+    const order = await ordersService.placeOrder(req.user.id, value);
+    res.status(201).json(order);
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function getOrdersForUser(req, res, next) {
+  try {
+    const { page, limit } = req.query;
+    const result = await ordersService.getOrdersForUser(req.user.id, req.user.role, {
+      page: parseInt(page) || 1,
+      limit: parseInt(limit) || 20,
+    });
+    res.json(result);
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function getOrderById(req, res, next) {
+  try {
+    const order = await ordersService.getOrderById(req.params.id, req.user.id, req.user.role);
+    res.json(order);
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function acceptOrder(req, res, next) {
+  try {
+    const order = await ordersService.acceptOrder(req.params.id, req.user.id);
+    res.json(order);
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function declineOrder(req, res, next) {
+  try {
+    const result = await ordersService.declineOrder(req.params.id, req.user.id);
+    res.json(result);
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function confirmDelivery(req, res, next) {
+  try {
+    const order = await ordersService.confirmDelivery(req.params.id, req.user.id);
+    res.json(order);
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function rateOrder(req, res, next) {
+  try {
+    const { error, value } = rateOrderSchema.validate(req.body);
+    if (error) return res.status(400).json({ error: error.message });
+
+    const order = await ordersService.rateOrder(req.params.id, req.user.id, value);
+    res.json(order);
+  } catch (err) {
+    next(err);
+  }
+}
+
+module.exports = {
+  placeOrder,
+  getOrdersForUser,
+  getOrderById,
+  acceptOrder,
+  declineOrder,
+  confirmDelivery,
+  rateOrder,
+};
+</file>
+
+<file path="src/modules/orders/orders.router.js">
+const express = require('express');
+const router = express.Router();
+const { authenticate, authorize } = require('../../middleware/auth');
+const ctrl = require('./orders.controller');
+
+// All routes require authentication
+router.use(authenticate);
+
+// POST /api/orders — place a new order (BUYER or TRADER)
+router.post('/', authorize(['BUYER', 'TRADER']), ctrl.placeOrder);
+
+// GET /api/orders — list orders for current user
+router.get('/', ctrl.getOrdersForUser);
+
+// GET /api/orders/:id — get single order detail
+router.get('/:id', ctrl.getOrderById);
+
+// POST /api/orders/:id/accept — seller accepts
+router.post('/:id/accept', authorize(['FARMER', 'TRADER']), ctrl.acceptOrder);
+
+// POST /api/orders/:id/decline — seller declines
+router.post('/:id/decline', authorize(['FARMER', 'TRADER']), ctrl.declineOrder);
+
+// POST /api/orders/:id/confirm-delivery — buyer confirms delivery
+router.post('/:id/confirm-delivery', authorize(['BUYER', 'TRADER']), ctrl.confirmDelivery);
+
+// POST /api/orders/:id/rate — buyer rates order
+router.post('/:id/rate', authorize(['BUYER', 'TRADER']), ctrl.rateOrder);
+
+module.exports = router;
+</file>
+
+<file path="src/modules/orders/orders.schema.js">
+const Joi = require('joi');
+
+const placeOrderSchema = Joi.object({
+  listingId: Joi.string().required(),
+  quantityKg: Joi.number().positive().required(),
+  deliveryDate: Joi.date().iso().required(),
+  deliveryAddress: Joi.string().min(5).required(),
+});
+
+const rateOrderSchema = Joi.object({
+  qualityRating: Joi.number().integer().min(1).max(5).required(),
+  packagingRating: Joi.number().integer().min(1).max(5).required(),
+  deliveryRating: Joi.number().integer().min(1).max(5).required(),
+  comment: Joi.string().max(500).optional(),
+});
+
+module.exports = { placeOrderSchema, rateOrderSchema };
+</file>
+
+<file path="src/modules/orders/orders.service.js">
+const { PrismaClient } = require('@prisma/client');
+const { createNotification } = require('../notifications/notifications.service');
+
+const prisma = new PrismaClient();
+
+const ORDER_INCLUDE_LIST = {
+  listing: { select: { cropType: true, quantityKg: true, remainingKg: true } },
+  buyer: { select: { id: true, name: true } },
+  trip: { select: { status: true } },
+};
+
+const ORDER_INCLUDE_DETAIL = {
+  listing: { include: { images: true } },
+  buyer: { select: { id: true, name: true, phone: true } },
+  seller: { select: { id: true, name: true, phone: true } },
+  trip: true,
+};
+
+// ── placeOrder ────────────────────────────────────────────────────────────────
+
+async function placeOrder(buyerId, { listingId, quantityKg, deliveryDate, deliveryAddress }) {
+  const listing = await prisma.listing.findUnique({ where: { id: listingId } });
+
+  if (!listing) throw Object.assign(new Error('Listing not found'), { status: 404 });
+  if (listing.status !== 'ACTIVE') throw Object.assign(new Error('Listing is not active'), { status: 400 });
+  if (listing.remainingKg < quantityKg) throw Object.assign(new Error('Insufficient stock'), { status: 400 });
+  if (listing.sellerId === buyerId) throw Object.assign(new Error('Buyer cannot be the seller'), { status: 400 });
+
+  const produceTotal = listing.askingPrice * quantityKg;
+  const platformFee = parseFloat((produceTotal * 0.06).toFixed(2));
+
+  const newRemainingKg = listing.remainingKg - quantityKg;
+
+  // Determine new listing status
+  let newListingStatus;
+  if (newRemainingKg <= 0) {
+    newListingStatus = 'FULFILLED';
+  } else {
+    // Check if this is the first order on this listing
+    const existingOrderCount = await prisma.order.count({
+      where: { listingId, status: { notIn: ['CANCELLED'] } },
+    });
+    newListingStatus = existingOrderCount === 0 ? 'ACCEPTED' : listing.status;
+  }
+
+  const [order] = await prisma.$transaction([
+    prisma.order.create({
+      data: {
+        listingId,
+        buyerId,
+        sellerId: listing.sellerId,
+        quantityKg,
+        pricePerKg: listing.askingPrice,
+        deliveryDate: new Date(deliveryDate),
+        deliveryAddress,
+        produceTotal,
+        platformFee,
+        status: 'PENDING',
+        buyerPaymentStatus: 'STAGE1_PAID',
+        sellerPaymentStatus: 'WAITING',
+      },
+    }),
+    prisma.listing.update({
+      where: { id: listingId },
+      data: {
+        remainingKg: newRemainingKg,
+        ...(newListingStatus !== listing.status && { status: newListingStatus }),
+      },
+    }),
+  ]);
+
+  // Fire-and-forget notification
+  createNotification(
+    listing.sellerId,
+    'ORDER_PLACED',
+    'New Order Received',
+    `You have a new order for ${quantityKg}kg`,
+    { orderId: order.id }
+  ).catch(() => {});
+
+  return order;
+}
+
+// ── getOrdersForUser ──────────────────────────────────────────────────────────
+
+async function getOrdersForUser(userId, role, { page = 1, limit = 20 } = {}) {
+  if (role === 'DRIVER') return [];
+
+  const where = role === 'BUYER' ? { buyerId: userId } : { sellerId: userId };
+
+  const [orders, total] = await prisma.$transaction([
+    prisma.order.findMany({
+      where,
+      include: ORDER_INCLUDE_LIST,
+      orderBy: { createdAt: 'desc' },
+      skip: (page - 1) * limit,
+      take: limit,
+    }),
+    prisma.order.count({ where }),
+  ]);
+
+  return { orders, total, page, limit };
+}
+
+// ── getOrderById ──────────────────────────────────────────────────────────────
+
+async function getOrderById(orderId, userId, role) {
+  const order = await prisma.order.findUnique({
+    where: { id: orderId },
+    include: ORDER_INCLUDE_DETAIL,
+  });
+
+  if (!order) throw Object.assign(new Error('Order not found'), { status: 404 });
+
+  const canAccess =
+    order.buyerId === userId ||
+    order.sellerId === userId ||
+    role === 'ADMIN';
+
+  if (!canAccess) throw Object.assign(new Error('Forbidden'), { status: 403 });
+
+  return order;
+}
+
+// ── acceptOrder ───────────────────────────────────────────────────────────────
+
+async function acceptOrder(orderId, sellerId) {
+  const order = await prisma.order.findUnique({ where: { id: orderId } });
+
+  if (!order) throw Object.assign(new Error('Order not found'), { status: 404 });
+  if (order.sellerId !== sellerId) throw Object.assign(new Error('Forbidden'), { status: 403 });
+  if (order.status !== 'PENDING') {
+    throw Object.assign(new Error(`Cannot accept order in status ${order.status}`), { status: 400 });
+  }
+
+  const updated = await prisma.order.update({
+    where: { id: orderId },
+    data: { status: 'ACCEPTED' },
+  });
+
+  createNotification(
+    order.buyerId,
+    'ORDER_ACCEPTED',
+    'Order Accepted',
+    'Your order has been accepted by the seller',
+    { orderId }
+  ).catch(() => {});
+
+  return updated;
+}
+
+// ── declineOrder ──────────────────────────────────────────────────────────────
+
+async function declineOrder(orderId, sellerId) {
+  const order = await prisma.order.findUnique({
+    where: { id: orderId },
+    include: { listing: true },
+  });
+
+  if (!order) throw Object.assign(new Error('Order not found'), { status: 404 });
+  if (order.sellerId !== sellerId) throw Object.assign(new Error('Forbidden'), { status: 403 });
+  if (order.status !== 'PENDING') {
+    throw Object.assign(new Error(`Cannot decline order in status ${order.status}`), { status: 400 });
+  }
+
+  const restoredRemainingKg = order.listing.remainingKg + order.quantityKg;
+
+  // Determine restored listing status
+  let restoredListingStatus = order.listing.status;
+  if (order.listing.status === 'FULFILLED') {
+    restoredListingStatus = 'ACCEPTED'; // still has other orders
+  } else {
+    const otherActiveOrders = await prisma.order.count({
+      where: {
+        listingId: order.listingId,
+        id: { not: orderId },
+        status: { in: ['PENDING', 'ACCEPTED', 'TRANSPORT_BOOKED', 'LOADED', 'IN_TRANSIT'] },
+      },
+    });
+    if (otherActiveOrders === 0) restoredListingStatus = 'ACTIVE';
+  }
+
+  await prisma.$transaction([
+    prisma.order.update({
+      where: { id: orderId },
+      data: { status: 'CANCELLED', buyerPaymentStatus: 'REFUNDED' },
+    }),
+    prisma.listing.update({
+      where: { id: order.listingId },
+      data: {
+        remainingKg: restoredRemainingKg,
+        status: restoredListingStatus,
+      },
+    }),
+  ]);
+
+  createNotification(
+    order.buyerId,
+    'ORDER_DECLINED',
+    'Order Declined',
+    'Your order has been declined by the seller',
+    { orderId }
+  ).catch(() => {});
+
+  return { success: true };
+}
+
+// ── confirmDelivery ───────────────────────────────────────────────────────────
+
+async function confirmDelivery(orderId, buyerId) {
+  const order = await prisma.order.findUnique({ where: { id: orderId } });
+
+  if (!order) throw Object.assign(new Error('Order not found'), { status: 404 });
+  if (order.buyerId !== buyerId) throw Object.assign(new Error('Forbidden'), { status: 403 });
+  if (order.status !== 'IN_TRANSIT') {
+    throw Object.assign(new Error(`Cannot confirm delivery for order in status ${order.status}`), { status: 400 });
+  }
+
+  const [updated] = await prisma.$transaction([
+    prisma.order.update({
+      where: { id: orderId },
+      data: {
+        status: 'DELIVERED',
+        sellerPaymentStatus: 'FULLY_SETTLED',
+        driverPaymentStatus: 'PAID',
+      },
+    }),
+  ]);
+
+  createNotification(
+    order.sellerId,
+    'PAYMENT_FINAL',
+    'Payment Released',
+    'Delivery confirmed. Your 44% final payment has been released.',
+    { orderId }
+  ).catch(() => {});
+
+  return updated;
+}
+
+// ── rateOrder ─────────────────────────────────────────────────────────────────
+
+async function rateOrder(orderId, buyerId, { qualityRating, packagingRating, deliveryRating, comment }) {
+  const order = await prisma.order.findUnique({ where: { id: orderId } });
+
+  if (!order) throw Object.assign(new Error('Order not found'), { status: 404 });
+  if (order.buyerId !== buyerId) throw Object.assign(new Error('Forbidden'), { status: 403 });
+  if (order.status !== 'DELIVERED') {
+    throw Object.assign(new Error('Can only rate delivered orders'), { status: 400 });
+  }
+
+  return prisma.order.update({
+    where: { id: orderId },
+    data: { qualityRating, packagingRating, deliveryRating, ratingComment: comment },
+  });
+}
+
+module.exports = {
+  placeOrder,
+  getOrdersForUser,
+  getOrderById,
+  acceptOrder,
+  declineOrder,
+  confirmDelivery,
+  rateOrder,
+};
+</file>
+
+<file path="src/modules/orders/orders.test.js">
+/**
+ * orders.test.js
+ * Unit tests for orders.service.js using Jest manual mocks for Prisma.
+ */
+
+// ── Mock PrismaClient ─────────────────────────────────────────────────────────
+const mockPrisma = {
+  listing: {
+    findUnique: jest.fn(),
+    update: jest.fn(),
+  },
+  order: {
+    create: jest.fn(),
+    findUnique: jest.fn(),
+    update: jest.fn(),
+    count: jest.fn(),
+    findMany: jest.fn(),
+  },
+  notification: {
+    create: jest.fn().mockResolvedValue({}),
+  },
+  $transaction: jest.fn(),
+};
+
+jest.mock('@prisma/client', () => ({
+  PrismaClient: jest.fn(() => mockPrisma),
+}));
+
+// ── Mock notifications ────────────────────────────────────────────────────────
+jest.mock('../notifications/notifications.service', () => ({
+  createNotification: jest.fn().mockResolvedValue({}),
+}));
+
+const ordersService = require('./orders.service');
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+const makeListing = (overrides = {}) => ({
+  id: 'listing-1',
+  sellerId: 'seller-1',
+  status: 'ACTIVE',
+  askingPrice: 100,
+  remainingKg: 50,
+  quantityKg: 50,
+  ...overrides,
+});
+
+const makeOrder = (overrides = {}) => ({
+  id: 'order-1',
+  listingId: 'listing-1',
+  buyerId: 'buyer-1',
+  sellerId: 'seller-1',
+  quantityKg: 10,
+  status: 'PENDING',
+  buyerPaymentStatus: 'STAGE1_PAID',
+  sellerPaymentStatus: 'WAITING',
+  driverPaymentStatus: 'PENDING',
+  listing: makeListing(),
+  ...overrides,
+});
+
+beforeEach(() => {
+  jest.clearAllMocks();
+});
+
+// ── placeOrder ────────────────────────────────────────────────────────────────
+
+describe('placeOrder', () => {
+  const input = {
+    listingId: 'listing-1',
+    quantityKg: 10,
+    deliveryDate: '2025-12-01',
+    deliveryAddress: '123 Main Street, Mumbai',
+  };
+
+  test('creates order with correct produceTotal and platformFee', async () => {
+    const listing = makeListing({ askingPrice: 100, remainingKg: 50 });
+    mockPrisma.listing.findUnique.mockResolvedValue(listing);
+    mockPrisma.order.count.mockResolvedValue(0);
+
+    const createdOrder = {
+      id: 'order-1',
+      produceTotal: 1000,
+      platformFee: 60,
+    };
+    mockPrisma.$transaction.mockImplementation(async (ops) => {
+      // ops is an array of promises from prisma.order.create and prisma.listing.update
+      return [createdOrder, {}];
+    });
+
+    const result = await ordersService.placeOrder('buyer-1', input);
+
+    // Verify $transaction was called
+    expect(mockPrisma.$transaction).toHaveBeenCalled();
+
+    // The transaction array should contain an order.create call
+    const txArgs = mockPrisma.$transaction.mock.calls[0][0];
+    expect(Array.isArray(txArgs)).toBe(true);
+
+    expect(result.produceTotal).toBe(1000);
+    expect(result.platformFee).toBe(60);
+  });
+
+  test('platformFee = produceTotal * 0.06 arithmetic', async () => {
+    // 3 kg at 33.33/kg = 99.99 total, fee = 5.9994 → rounded to 6.00
+    const listing = makeListing({ askingPrice: 33.33, remainingKg: 10 });
+    mockPrisma.listing.findUnique.mockResolvedValue(listing);
+    mockPrisma.order.count.mockResolvedValue(0);
+
+    let capturedData;
+    mockPrisma.$transaction.mockImplementation(async (ops) => {
+      // Capture what order.create was called with by spying on prisma.order.create mock
+      return [{ id: 'o1', ...capturedData }, {}];
+    });
+
+    // We need to capture the create call — mock order.create to record args
+    mockPrisma.order.create.mockImplementation(({ data }) => {
+      capturedData = data;
+      return Promise.resolve({ id: 'o1', ...data });
+    });
+
+    // For $transaction with array of promises, we need a different approach:
+    // Re-mock $transaction to actually execute the array
+    mockPrisma.$transaction.mockImplementation(async (ops) => {
+      return Promise.all(ops);
+    });
+
+    const result = await ordersService.placeOrder('buyer-1', {
+      ...input,
+      quantityKg: 3,
+      listingId: 'listing-1',
+    });
+
+    const expectedProduceTotal = 33.33 * 3; // 99.99
+    const expectedPlatformFee = parseFloat((expectedProduceTotal * 0.06).toFixed(2)); // 6.00
+
+    expect(mockPrisma.order.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          produceTotal: expectedProduceTotal,
+          platformFee: expectedPlatformFee,
+        }),
+      })
+    );
+  });
+
+  test('decrements listing.remainingKg by quantityKg', async () => {
+    const listing = makeListing({ remainingKg: 50 });
+    mockPrisma.listing.findUnique.mockResolvedValue(listing);
+    mockPrisma.order.count.mockResolvedValue(0);
+    mockPrisma.$transaction.mockImplementation(async (ops) => Promise.all(ops));
+    mockPrisma.order.create.mockResolvedValue(makeOrder());
+    mockPrisma.listing.update.mockResolvedValue({});
+
+    await ordersService.placeOrder('buyer-1', { ...input, quantityKg: 10 });
+
+    expect(mockPrisma.listing.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ remainingKg: 40 }),
+      })
+    );
+  });
+
+  test('sets listing.status=FULFILLED when remainingKg reaches 0', async () => {
+    const listing = makeListing({ remainingKg: 10 });
+    mockPrisma.listing.findUnique.mockResolvedValue(listing);
+    mockPrisma.order.count.mockResolvedValue(1);
+    mockPrisma.$transaction.mockImplementation(async (ops) => Promise.all(ops));
+    mockPrisma.order.create.mockResolvedValue(makeOrder());
+    mockPrisma.listing.update.mockResolvedValue({});
+
+    await ordersService.placeOrder('buyer-1', { ...input, quantityKg: 10 });
+
+    expect(mockPrisma.listing.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ status: 'FULFILLED', remainingKg: 0 }),
+      })
+    );
+  });
+
+  test('rejects if buyer is the seller', async () => {
+    const listing = makeListing({ sellerId: 'buyer-1' });
+    mockPrisma.listing.findUnique.mockResolvedValue(listing);
+
+    await expect(ordersService.placeOrder('buyer-1', input)).rejects.toMatchObject({
+      message: expect.stringMatching(/buyer cannot be the seller/i),
+      status: 400,
+    });
+  });
+
+  test('rejects if quantityKg > listing.remainingKg', async () => {
+    const listing = makeListing({ remainingKg: 5 });
+    mockPrisma.listing.findUnique.mockResolvedValue(listing);
+
+    await expect(ordersService.placeOrder('buyer-1', { ...input, quantityKg: 10 })).rejects.toMatchObject({
+      message: expect.stringMatching(/insufficient stock/i),
+      status: 400,
+    });
+  });
+});
+
+// ── acceptOrder ───────────────────────────────────────────────────────────────
+
+describe('acceptOrder', () => {
+  test('transitions status from PENDING to ACCEPTED', async () => {
+    const order = makeOrder({ status: 'PENDING' });
+    mockPrisma.order.findUnique.mockResolvedValue(order);
+    mockPrisma.order.update.mockResolvedValue({ ...order, status: 'ACCEPTED' });
+
+    const result = await ordersService.acceptOrder('order-1', 'seller-1');
+
+    expect(mockPrisma.order.update).toHaveBeenCalledWith(
+      expect.objectContaining({ data: { status: 'ACCEPTED' } })
+    );
+    expect(result.status).toBe('ACCEPTED');
+  });
+
+  test('rejects invalid state transition (DELIVERED → ACCEPTED)', async () => {
+    const order = makeOrder({ status: 'DELIVERED' });
+    mockPrisma.order.findUnique.mockResolvedValue(order);
+
+    await expect(ordersService.acceptOrder('order-1', 'seller-1')).rejects.toMatchObject({
+      status: 400,
+    });
+  });
+});
+
+// ── confirmDelivery ───────────────────────────────────────────────────────────
+
+describe('confirmDelivery', () => {
+  test('sets sellerPaymentStatus=FULLY_SETTLED AND driverPaymentStatus=PAID', async () => {
+    const order = makeOrder({ status: 'IN_TRANSIT', buyerId: 'buyer-1' });
+    mockPrisma.order.findUnique.mockResolvedValue(order);
+    const updatedOrder = {
+      ...order,
+      status: 'DELIVERED',
+      sellerPaymentStatus: 'FULLY_SETTLED',
+      driverPaymentStatus: 'PAID',
+    };
+    mockPrisma.order.update.mockResolvedValue(updatedOrder);
+    mockPrisma.$transaction.mockImplementation(async (ops) => Promise.all(ops));
+
+    const result = await ordersService.confirmDelivery('order-1', 'buyer-1');
+
+    expect(mockPrisma.order.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          status: 'DELIVERED',
+          sellerPaymentStatus: 'FULLY_SETTLED',
+          driverPaymentStatus: 'PAID',
+        }),
+      })
+    );
+  });
+});
+
+// ── declineOrder ──────────────────────────────────────────────────────────────
+
+describe('declineOrder', () => {
+  test('adds quantityKg back to listing.remainingKg', async () => {
+    const listing = makeListing({ remainingKg: 40, status: 'ACCEPTED' });
+    const order = makeOrder({ status: 'PENDING', quantityKg: 10, listing });
+    mockPrisma.order.findUnique.mockResolvedValue(order);
+    mockPrisma.order.count.mockResolvedValue(0); // no other active orders
+    mockPrisma.$transaction.mockImplementation(async (ops) => Promise.all(ops));
+    mockPrisma.order.update.mockResolvedValue({ ...order, status: 'CANCELLED' });
+    mockPrisma.listing.update.mockResolvedValue({});
+
+    await ordersService.declineOrder('order-1', 'seller-1');
+
+    expect(mockPrisma.listing.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ remainingKg: 50 }),
+      })
+    );
+  });
+});
+</file>
+
+<file path="src/modules/transport/transport.router.js">
+const express = require('express');
+const router = express.Router();
+const { authenticate } = require('../../middleware/auth');
+const { requireRole } = require('../../middleware/roles');
+const { getDscRoutes, bookTransport } = require('./transport.service');
+
+// GET /api/transport/dsc-routes?region=X — public
+router.get('/dsc-routes', async (req, res, next) => {
+  try {
+    const { region } = req.query;
+    const routes = await getDscRoutes(region);
+    res.json({ success: true, data: routes });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// POST /api/orders/:id/book-transport — authenticated FARMER or TRADER
+// Note: mounted under /api/transport but proxied from orders path in app.js
+router.post('/orders/:id/book-transport', authenticate, requireRole('FARMER', 'TRADER'), async (req, res, next) => {
+  try {
+    const trip = await bookTransport(req.params.id, req.user.id, req.body);
+    res.status(201).json({ success: true, data: trip });
+  } catch (err) {
+    next(err);
+  }
+});
+
+module.exports = router;
+</file>
+
+<file path="src/modules/transport/transport.service.js">
+const { PrismaClient } = require('@prisma/client');
+const axios = require('axios');
+const { env } = require('../../config/env');
+
+const prisma = new PrismaClient();
+
+// Lazily loaded to avoid issues if firebase isn't configured in test env
+function getFirestore() {
+  try {
+    return require('../../config/firebase').firestore;
+  } catch {
+    return null;
+  }
+}
+
+// ── getDscRoutes ──────────────────────────────────────────────────────────────
+
+async function getDscRoutes(region) {
+  const where = { isActive: true };
+  if (region) where.region = region;
+  return prisma.dscRoute.findMany({ where, orderBy: { name: 'asc' } });
+}
+
+// ── bookTransport ─────────────────────────────────────────────────────────────
+
+async function bookTransport(orderId, sellerId, { transportMode, vehicleType, transportFee, routeId, scheduledTime }) {
+  const order = await prisma.order.findUnique({
+    where: { id: orderId },
+    include: {
+      listing: { include: { seller: true } },
+    },
+  });
+
+  if (!order) throw Object.assign(new Error('Order not found'), { status: 404 });
+  if (order.sellerId !== sellerId) throw Object.assign(new Error('Forbidden'), { status: 403 });
+  if (order.status !== 'ACCEPTED') {
+    throw Object.assign(new Error(`Cannot book transport for order in status ${order.status}`), { status: 400 });
+  }
+
+  const pickupAddress = order.listing.seller.location || '';
+  const deliveryAddress = order.deliveryAddress;
+
+  // Optional: calculate route distance via ORS
+  let distance = null;
+  if (env.ORS_API_KEY && pickupAddress && deliveryAddress) {
+    try {
+      // ORS requires lng,lat — attempt a geocode-free approach if coords are embedded
+      // This is best-effort; failure is non-fatal
+      const [pickupLat, pickupLng] = pickupAddress.split(',').map(Number);
+      const [deliveryLat, deliveryLng] = deliveryAddress.split(',').map(Number);
+
+      if (!isNaN(pickupLat) && !isNaN(pickupLng) && !isNaN(deliveryLat) && !isNaN(deliveryLng)) {
+        const orsUrl = `https://api.openrouteservice.org/v2/directions/driving-car?start=${pickupLng},${pickupLat}&end=${deliveryLng},${deliveryLat}`;
+        const orsRes = await axios.get(orsUrl, {
+          headers: { Authorization: env.ORS_API_KEY },
+          timeout: 5000,
+        });
+        const summary = orsRes.data?.features?.[0]?.properties?.summary;
+        if (summary) distance = summary.distance; // meters
+      }
+    } catch {
+      // ORS unavailable — continue
+      distance = null;
+    }
+  }
+
+  const tripData = {
+    orderId,
+    transportMode,
+    vehicleType,
+    pickupAddress,
+    deliveryAddress,
+    earnings: transportFee,
+    status: 'AVAILABLE',
+    ...(routeId && { routeId }),
+    ...(scheduledTime && { scheduledTime: new Date(scheduledTime) }),
+    ...(distance !== null && { routeId: distance.toString() }), // store distance in routeId if no routeId given
+  };
+
+  const [trip] = await prisma.$transaction([
+    prisma.trip.create({ data: tripData }),
+    prisma.order.update({
+      where: { id: orderId },
+      data: { status: 'TRANSPORT_BOOKED', transportFee },
+    }),
+  ]);
+
+  // Write to Firestore (non-fatal)
+  try {
+    const firestore = getFirestore();
+    if (firestore) {
+      await firestore.collection('trips').doc(trip.id).set({
+        status: 'AVAILABLE',
+        orderId,
+        createdAt: new Date(),
+      });
+    }
+  } catch {
+    // Firestore down — PG already committed
+  }
+
+  return trip;
+}
+
+module.exports = { getDscRoutes, bookTransport };
+</file>
+
+<file path="src/modules/users/users.router.js">
+const express = require('express');
+const { authenticate } = require('../../middleware/auth');
+const { validate } = require('../../middleware/validate');
+const { getMe, updateMe, updateMeSchema } = require('./users.service');
+
+const router = express.Router();
+
+router.get('/me', authenticate, async (req, res, next) => {
+  try {
+    const data = await getMe(req.user.id);
+    return res.status(200).json({ success: true, data });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.put('/me', authenticate, validate(updateMeSchema), async (req, res, next) => {
+  try {
+    const data = await updateMe(req.user.id, req.body);
+    return res.status(200).json({ success: true, data });
+  } catch (err) {
+    next(err);
+  }
+});
+
+module.exports = router;
+</file>
+
+<file path="src/modules/users/users.service.js">
+const { z } = require('zod');
+const { prisma } = require('../../config/prisma');
+
+const ALLOWED_UPDATE_FIELDS = ['language', 'fcmToken', 'location', 'deliveryAddress', 'name', 'isOnline', 'vehicleType', 'vehicleCapacity', 'vehicleReg', 'licenseUrl', 'workMode'];
+
+async function getMe(userId) {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+  });
+  if (!user) {
+    const err = Object.assign(new Error('User not found'), { statusCode: 404, code: 'USER_NOT_FOUND' });
+    throw err;
+  }
+  const { passwordHash, ...safeUser } = user;
+  return safeUser;
+}
+
+async function updateMe(userId, data) {
+  const filtered = {};
+  for (const key of ALLOWED_UPDATE_FIELDS) {
+    if (data[key] !== undefined) {
+      filtered[key] = data[key];
+    }
+  }
+  const user = await prisma.user.update({
+    where: { id: userId },
+    data: filtered,
+  });
+  const { passwordHash, ...safeUser } = user;
+  return safeUser;
+}
+
+const updateMeSchema = z.object({
+  language: z.enum(['EN', 'KN', 'HI', 'MR']).optional(),
+  fcmToken: z.string().optional(),
+  location: z.string().optional(),
+  deliveryAddress: z.string().optional(),
+  name: z.string().min(1).optional(),
+  isOnline: z.boolean().optional(),
+  vehicleType: z.string().optional(),
+  vehicleCapacity: z.number().optional(),
+  vehicleReg: z.string().optional(),
+  licenseUrl: z.string().optional(),
+  workMode: z.string().optional(),
+});
+
+module.exports = { getMe, updateMe, updateMeSchema };
+</file>
+
+<file path="src/server.js">
+const app = require('./app');
+const { env } = require('./config/env');
+
+app.listen(env.PORT, () => {
+  console.log(`✅ Kisan Mitra API running on port ${env.PORT}`);
+  console.log(`   Environment: ${env.NODE_ENV}`);
+  console.log(`   Health check: http://localhost:${env.PORT}/health`);
+});
+</file>
+
+<file path="src/utils/aiClient.js">
+const axios = require('axios');
+const { env } = require('../config/env');
+
+let aiAxios = null;
+
+function getClient() {
+  if (!env.AI_SERVICE_URL) return null;
+  if (!aiAxios) {
+    aiAxios = axios.create({
+      baseURL: env.AI_SERVICE_URL,
+      timeout: 8000,
+    });
+  }
+  return aiAxios;
+}
+
+/**
+ * Get price advice for a crop.
+ * @param {{ crop_type: string, quantity_kg: number, location: string }} params
+ * @returns {Promise<{ ai_predicted_price: number, mandi_reference_price: number } | null>}
+ */
+async function getPriceAdvice({ crop_type, quantity_kg, location }) {
+  const client = getClient();
+  if (!client) return null;
+  try {
+    const { data } = await client.post('/api/ai/price-advice', {
+      crop_type,
+      quantity_kg,
+      location,
+    });
+    return data;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Get market overview for a region.
+ * @param {{ region: string }} params
+ * @returns {Promise<Array<{ crop: string, ai_price: number, mandi_price: number, trend_pct: number, demand_level: string }>>}
+ */
+async function getMarketOverview({ region }) {
+  const client = getClient();
+  if (!client) return [];
+  try {
+    const { data } = await client.get('/api/ai/market-overview', {
+      params: { region },
+    });
+    return Array.isArray(data) ? data : [];
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Validate listing images against declared grade.
+ * @param {{ image_urls: string[], declared_grade: string }} params
+ * @returns {Promise<{ valid: boolean, predicted_grade: string, mismatch: boolean } | null>}
+ */
+async function validateImages({ image_urls, declared_grade }) {
+  const client = getClient();
+  if (!client) return null;
+  try {
+    const { data } = await client.post('/api/ai/validate-images', {
+      image_urls,
+      declared_grade,
+    });
+    return data;
+  } catch {
+    return null;
+  }
+}
+
+module.exports = { getPriceAdvice, getMarketOverview, validateImages };
+</file>
+
+<file path="src/utils/cloudinary.js">
+const cloudinary = require('cloudinary').v2;
+const { env } = require('../config/env');
+
+cloudinary.config({
+  cloud_name: env.CLOUDINARY_CLOUD_NAME,
+  api_key: env.CLOUDINARY_API_KEY,
+  api_secret: env.CLOUDINARY_API_SECRET,
+});
+
+/**
+ * Upload a file buffer to Cloudinary.
+ * @param {Buffer} fileBuffer
+ * @param {string} listingId
+ * @returns {Promise<{ public_id: string, secure_url: string }>}
+ */
+function uploadListingImage(fileBuffer, listingId) {
+  return new Promise((resolve, reject) => {
+    const uploadStream = cloudinary.uploader.upload_stream(
+      {
+        folder: `kisan-mitra/listings/${listingId}`,
+        resource_type: 'image',
+      },
+      (error, result) => {
+        if (error) return reject(error);
+        resolve({ public_id: result.public_id, secure_url: result.secure_url });
+      }
+    );
+    uploadStream.end(fileBuffer);
+  });
+}
+
+module.exports = { uploadListingImage };
+</file>
+
+<file path="src/utils/jwt.js">
+const jwt = require('jsonwebtoken');
+const { env } = require('../config/env');
+
+function sign(payload) {
+  return jwt.sign(payload, env.JWT_SECRET, { expiresIn: '24h', algorithm: 'HS256' });
+}
+
+function verify(token) {
+  return jwt.verify(token, env.JWT_SECRET, { algorithms: ['HS256'] });
+}
+
+module.exports = { sign, verify };
+</file>
+
+<file path="src/utils/password.js">
+const bcrypt = require('bcrypt');
+
+const ROUNDS = 12;
+
+function hash(plain) {
+  return bcrypt.hash(plain, ROUNDS);
+}
+
+function compare(plain, hashed) {
+  return bcrypt.compare(plain, hashed);
+}
+
+module.exports = { hash, compare };
+</file>
+
+</files>

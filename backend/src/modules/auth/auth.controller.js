@@ -9,16 +9,6 @@ async function register(req, res, next) {
   }
 }
 
-async function verifyOtp(req, res, next) {
-  try {
-    const { userId, otp } = req.body;
-    const data = await authService.verifyOtp(userId, otp);
-    return res.status(200).json({ success: true, data });
-  } catch (err) {
-    next(err);
-  }
-}
-
 async function login(req, res, next) {
   try {
     const { emailOrPhone, password } = req.body;
@@ -29,4 +19,4 @@ async function login(req, res, next) {
   }
 }
 
-module.exports = { register, verifyOtp, login };
+module.exports = { register, login };
