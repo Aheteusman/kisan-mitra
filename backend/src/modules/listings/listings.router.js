@@ -12,6 +12,7 @@ const {
   createListingController,
   uploadImagesController,
   getListingsController,
+  getMyListingsController,
   getListingByIdController,
   updateListingController,
   cancelListingController,
@@ -47,6 +48,10 @@ router.post(
   upload.array('images', 4),
   uploadImagesController
 );
+
+// ── FIX: /mine must come BEFORE /:id to avoid being matched as an ID ──
+// GET /api/listings/mine — authenticated, returns seller's own listings (all statuses)
+router.get('/mine', authenticate, getMyListingsController);
 
 // GET /api/listings — public browse (no auth)
 router.get('/', validate(filterSchema, 'query'), getListingsController);

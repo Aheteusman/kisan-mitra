@@ -1,7 +1,5 @@
-const { PrismaClient } = require('@prisma/client');
+const { prisma } = require('../../config/prisma');     // ← shared singleton (FIXED)
 const { createNotification } = require('../notifications/notifications.service');
-
-const prisma = new PrismaClient();
 
 function getFirestore() {
   try {
@@ -121,7 +119,6 @@ async function acceptTrip(tripId, driverId) {
 }
 
 // ── markGoodsLoaded ───────────────────────────────────────────────────────────
-// !!! CRITICAL PAYMENT TRIGGER !!!
 
 async function markGoodsLoaded(tripId, driverId, photoUrl) {
   const trip = await prisma.trip.findUnique({
@@ -136,7 +133,6 @@ async function markGoodsLoaded(tripId, driverId, photoUrl) {
   }
   if (!photoUrl) throw Object.assign(new Error('Photo URL is required'), { status: 400 });
 
-  // Atomically update trip + order payment statuses
   const [updatedTrip] = await prisma.$transaction([
     prisma.trip.update({
       where: { id: tripId },
@@ -150,8 +146,8 @@ async function markGoodsLoaded(tripId, driverId, photoUrl) {
       where: { id: trip.orderId },
       data: {
         status: 'LOADED',
-        buyerPaymentStatus: 'STAGE2_PAID',    // buyer's remaining 50%
-        sellerPaymentStatus: 'STAGE1_RELEASED', // seller gets 50%
+        buyerPaymentStatus: 'STAGE2_PAID',
+        sellerPaymentStatus: 'STAGE1_RELEASED',
       },
     }),
   ]);
@@ -178,9 +174,6 @@ async function markGoodsLoaded(tripId, driverId, photoUrl) {
 }
 
 // ── markShortage ──────────────────────────────────────────────────────────────
-// !!! FARMER VIOLATION TRIGGER !!!
-// Called when driver finds less goods than ordered at farm pickup.
-// Does NOT call markGoodsLoaded — driver calls that separately.
 
 async function markShortage(tripId, driverId, actualKg) {
   const trip = await prisma.trip.findUnique({
@@ -201,7 +194,6 @@ async function markShortage(tripId, driverId, actualKg) {
   const newProduceTotal = order.pricePerKg * actualKg;
   const newPlatformFee = parseFloat((newProduceTotal * 0.06).toFixed(2));
 
-  // Recalculate and flag penalty
   await prisma.order.update({
     where: { id: order.id },
     data: {
@@ -212,19 +204,16 @@ async function markShortage(tripId, driverId, actualKg) {
     },
   });
 
-  // Increment seller violation count
   const updatedSeller = await prisma.user.update({
     where: { id: order.sellerId },
     data: { violationCount: { increment: 1 } },
   });
 
-  // Suspension threshold
   if (updatedSeller.violationCount >= 3) {
     await prisma.user.update({
       where: { id: order.sellerId },
       data: { isSuspended: true },
     });
-    // Suspend all active listings
     await prisma.listing.updateMany({
       where: { sellerId: order.sellerId, status: 'ACTIVE' },
       data: { status: 'SUSPENDED' },
@@ -258,9 +247,6 @@ async function markShortage(tripId, driverId, actualKg) {
 }
 
 // ── markDelivered ─────────────────────────────────────────────────────────────
-// NAMING NOTE: trip.status=DELIVERED means DRIVER IS DONE.
-// order.status=IN_TRANSIT means awaiting BUYER confirmation.
-// These are different events — buyer confirmation is POST /orders/:id/confirm-delivery.
 
 async function markDelivered(tripId, driverId) {
   const trip = await prisma.trip.findUnique({
@@ -274,19 +260,18 @@ async function markDelivered(tripId, driverId) {
     throw Object.assign(new Error(`Cannot mark delivered for trip in status ${trip.status}`), { status: 400 });
   }
 
-  // Atomically: trip=DELIVERED (driver done), order=IN_TRANSIT (awaiting buyer)
   const [updatedTrip] = await prisma.$transaction([
     prisma.trip.update({
       where: { id: tripId },
       data: {
-        status: 'DELIVERED', // driver's job is done
+        status: 'DELIVERED',
         deliveredAt: new Date(),
       },
     }),
     prisma.order.update({
       where: { id: trip.orderId },
       data: {
-        status: 'IN_TRANSIT', // awaiting buyer confirmation
+        status: 'IN_TRANSIT',
       },
     }),
   ]);
@@ -311,7 +296,6 @@ async function updateDriverLocation(tripId, driverId, { lat, lng }) {
   if (!trip) throw Object.assign(new Error('Trip not found'), { status: 404 });
   if (trip.driverId !== driverId) throw Object.assign(new Error('Forbidden'), { status: 403 });
 
-  // Firestore only — NO PostgreSQL write (source of truth for live location)
   await safeFirestoreSet(`trips/${tripId}`, { lat, lng, updatedAt: new Date() });
 
   return { success: true };
@@ -333,19 +317,19 @@ async function getDriverEarnings(driverId, { period } = {}) {
 
   const sum = arr => arr.reduce((acc, t) => acc + (t.earnings || 0), 0);
 
-  const todayTrips = trips.filter(t => t.deliveredAt >= startOfDay);
-  const weekTrips = trips.filter(t => t.deliveredAt >= startOfWeek);
-  const monthTrips = trips.filter(t => t.deliveredAt >= startOfMonth);
+  const todayTrips  = trips.filter(t => t.deliveredAt >= startOfDay);
+  const weekTrips   = trips.filter(t => t.deliveredAt >= startOfWeek);
+  const monthTrips  = trips.filter(t => t.deliveredAt >= startOfMonth);
 
   return {
-    today: sum(todayTrips),
-    thisWeek: sum(weekTrips),
+    today:     sum(todayTrips),
+    thisWeek:  sum(weekTrips),
     thisMonth: sum(monthTrips),
-    allTime: sum(trips),
+    allTime:   sum(trips),
     recentTrips: trips.slice(0, 10).map(t => ({
-      id: t.id,
-      orderId: t.orderId,
-      earnings: t.earnings,
+      id:          t.id,
+      orderId:     t.orderId,
+      earnings:    t.earnings,
       deliveredAt: t.deliveredAt,
     })),
     earningsNote: '100% of transport fee — no deductions',

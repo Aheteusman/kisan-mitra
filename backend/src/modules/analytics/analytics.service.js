@@ -1,7 +1,5 @@
-const { PrismaClient } = require('@prisma/client');
+const { prisma } = require('../../config/prisma');      // ← shared singleton (FIXED)
 const aiClient = require('../../utils/aiClient');
-
-const prisma = new PrismaClient();
 
 // ── Date helpers ──────────────────────────────────────────────────────────────
 
@@ -26,7 +24,6 @@ function sumField(arr, field) {
 async function getFarmerAnalytics(sellerId) {
   const { startOfDay, startOfWeek, startOfMonth } = getPeriodBounds();
 
-  // All settled orders (either stage)
   const settledOrders = await prisma.order.findMany({
     where: {
       sellerId,
@@ -38,19 +35,16 @@ async function getFarmerAnalytics(sellerId) {
     orderBy: { updatedAt: 'desc' },
   });
 
-  // Pending: stage1 released but not yet fully settled
   const pendingPayments = settledOrders.filter(
     o => o.sellerPaymentStatus === 'STAGE1_RELEASED'
   );
 
-  // Earnings = produceTotal - platformFee (what seller actually gets)
   const earnings = (order) => order.produceTotal - order.platformFee;
 
   const todayOrders   = settledOrders.filter(o => o.updatedAt >= startOfDay);
   const weekOrders    = settledOrders.filter(o => o.updatedAt >= startOfWeek);
   const monthOrders   = settledOrders.filter(o => o.updatedAt >= startOfMonth);
 
-  // Per-crop breakdown (allTime)
   const byCropMap = {};
   for (const order of settledOrders) {
     const crop = order.listing?.cropType || 'Unknown';
@@ -97,7 +91,6 @@ async function getBuyerAnalytics(buyerId) {
 
   const monthOrders = orders.filter(o => o.createdAt >= startOfMonth);
 
-  // Per-crop breakdown
   const byCropMap = {};
   for (const order of orders) {
     const crop = order.listing?.cropType || 'Unknown';
@@ -163,7 +156,6 @@ async function getMarketPrices(region) {
   } catch (e) {
     console.warn('AI market overview unavailable, using fallback:', e.message);
 
-    // Fallback: most common crop types from active listings
     const topCrops = await prisma.listing.groupBy({
       by: ['cropType'],
       _count: { cropType: true },
@@ -191,7 +183,6 @@ async function getMarketPrices(region) {
 }
 
 // ── getTraderCombinedAnalytics ────────────────────────────────────────────────
-// Single call for trader dashboard — avoids race conditions on frontend.
 
 async function getTraderCombinedAnalytics(traderId) {
   const [selling, buying] = await Promise.all([
@@ -201,12 +192,12 @@ async function getTraderCombinedAnalytics(traderId) {
 
   return {
     selling: {
-      today:          selling.today,
-      thisWeek:       selling.thisWeek,
-      thisMonth:      selling.thisMonth,
-      allTime:        selling.allTime,
-      byCrop:         selling.byCrop,
-      pendingPayments: selling.pendingPayments,
+      today:            selling.today,
+      thisWeek:         selling.thisWeek,
+      thisMonth:        selling.thisMonth,
+      allTime:          selling.allTime,
+      byCrop:           selling.byCrop,
+      pendingPayments:  selling.pendingPayments,
       platformFeeTotal: selling.platformFeeTotal,
     },
     buying: {

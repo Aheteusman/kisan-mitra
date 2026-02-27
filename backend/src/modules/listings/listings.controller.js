@@ -2,6 +2,7 @@ const {
   createListing,
   uploadImages,
   getListings,
+  getMyListings,
   getListingById,
   updateListing,
   cancelListing,
@@ -29,6 +30,16 @@ async function getListingsController(req, res, next) {
   try {
     const result = await getListings(req.query);
     res.json({ success: true, ...result });
+  } catch (err) {
+    next(err);
+  }
+}
+
+// ── FIX: New controller for seller's own listings ──
+async function getMyListingsController(req, res, next) {
+  try {
+    const listings = await getMyListings(req.user.id);
+    res.json({ success: true, data: { listings } });
   } catch (err) {
     next(err);
   }
@@ -65,6 +76,7 @@ module.exports = {
   createListingController,
   uploadImagesController,
   getListingsController,
+  getMyListingsController,
   getListingByIdController,
   updateListingController,
   cancelListingController,

@@ -1,17 +1,12 @@
-const { PrismaClient } = require('@prisma/client');
-
-const prisma = new PrismaClient();
+const { prisma } = require('../../config/prisma');     // ← shared singleton (FIXED)
 
 // ── createNotification ────────────────────────────────────────────────────────
-// Saves to DB first (guaranteed), then attempts FCM (best-effort, never throws).
 
 async function createNotification(userId, type, title, body, data = {}) {
-  // 1. Save to DB — source of truth
   const notification = await prisma.notification.create({
     data: { userId, type, title, body, data, read: false },
   });
 
-  // 2. Attempt FCM push — non-critical path
   try {
     const user = await prisma.user.findUnique({
       where: { id: userId },
@@ -21,7 +16,6 @@ async function createNotification(userId, type, title, body, data = {}) {
     if (user?.fcmToken) {
       const { getMessaging } = require('firebase-admin/messaging');
 
-      // FCM data values must be strings
       const stringData = Object.fromEntries(
         Object.entries(data).map(([k, v]) => [k, String(v)])
       );

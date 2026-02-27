@@ -1,7 +1,5 @@
-const { PrismaClient } = require('@prisma/client');
+const { prisma } = require('../../config/prisma');       // ← shared singleton
 const { createNotification } = require('../notifications/notifications.service');
-
-const prisma = new PrismaClient();
 
 const ORDER_INCLUDE_LIST = {
   listing: { select: { cropType: true, quantityKg: true, remainingKg: true } },
@@ -31,17 +29,10 @@ async function placeOrder(buyerId, { listingId, quantityKg, deliveryDate, delive
 
   const newRemainingKg = listing.remainingKg - quantityKg;
 
-  // Determine new listing status
-  let newListingStatus;
-  if (newRemainingKg <= 0) {
-    newListingStatus = 'FULFILLED';
-  } else {
-    // Check if this is the first order on this listing
-    const existingOrderCount = await prisma.order.count({
-      where: { listingId, status: { notIn: ['CANCELLED'] } },
-    });
-    newListingStatus = existingOrderCount === 0 ? 'ACCEPTED' : listing.status;
-  }
+  // ── FIX: Listing stays ACTIVE while stock remains.
+  // Only transition to FULFILLED when completely out of stock.
+  // This prevents listings from "disappearing" from the farmer's view.
+  const newListingStatus = newRemainingKg <= 0 ? 'FULFILLED' : 'ACTIVE';
 
   const [order] = await prisma.$transaction([
     prisma.order.create({
@@ -64,7 +55,7 @@ async function placeOrder(buyerId, { listingId, quantityKg, deliveryDate, delive
       where: { id: listingId },
       data: {
         remainingKg: newRemainingKg,
-        ...(newListingStatus !== listing.status && { status: newListingStatus }),
+        status: newListingStatus,
       },
     }),
   ]);
@@ -74,7 +65,7 @@ async function placeOrder(buyerId, { listingId, quantityKg, deliveryDate, delive
     listing.sellerId,
     'ORDER_PLACED',
     'New Order Received',
-    `You have a new order for ${quantityKg}kg`,
+    `You have a new order for ${quantityKg}kg of ${listing.cropType}`,
     { orderId: order.id }
   ).catch(() => {});
 
@@ -84,7 +75,7 @@ async function placeOrder(buyerId, { listingId, quantityKg, deliveryDate, delive
 // ── getOrdersForUser ──────────────────────────────────────────────────────────
 
 async function getOrdersForUser(userId, role, { page = 1, limit = 20 } = {}) {
-  if (role === 'DRIVER') return [];
+  if (role === 'DRIVER') return { orders: [], total: 0, page, limit };
 
   const where = role === 'BUYER' ? { buyerId: userId } : { sellerId: userId };
 
@@ -165,20 +156,8 @@ async function declineOrder(orderId, sellerId) {
 
   const restoredRemainingKg = order.listing.remainingKg + order.quantityKg;
 
-  // Determine restored listing status
-  let restoredListingStatus = order.listing.status;
-  if (order.listing.status === 'FULFILLED') {
-    restoredListingStatus = 'ACCEPTED'; // still has other orders
-  } else {
-    const otherActiveOrders = await prisma.order.count({
-      where: {
-        listingId: order.listingId,
-        id: { not: orderId },
-        status: { in: ['PENDING', 'ACCEPTED', 'TRANSPORT_BOOKED', 'LOADED', 'IN_TRANSIT'] },
-      },
-    });
-    if (otherActiveOrders === 0) restoredListingStatus = 'ACTIVE';
-  }
+  // Restore listing status to ACTIVE when a pending order is declined
+  const restoredListingStatus = order.listing.status === 'FULFILLED' ? 'ACTIVE' : order.listing.status;
 
   await prisma.$transaction([
     prisma.order.update({
@@ -231,7 +210,7 @@ async function confirmDelivery(orderId, buyerId) {
     order.sellerId,
     'PAYMENT_FINAL',
     'Payment Released',
-    'Delivery confirmed. Your 44% final payment has been released.',
+    'Delivery confirmed. Your final payment has been released.',
     { orderId }
   ).catch(() => {});
 

@@ -42,13 +42,13 @@ async function createListing(userId, userRole, data) {
       sellerId: userId,
       cropType: data.cropType,
       quantityKg: data.quantityKg,
-      remainingKg: data.quantityKg,            // starts equal to quantityKg
+      remainingKg: data.quantityKg,
       harvestDate: new Date(data.harvestDate),
       qualityGrade: data.qualityGrade,
       askingPrice: data.askingPrice,
       isTrader,
       aiPredictedPrice: aiPriceData?.ai_predicted_price ?? null,
-      mandiRefPrice: aiPriceData?.mandi_reference_price ?? null,  // ← schema field name
+      mandiRefPrice: aiPriceData?.mandi_reference_price ?? null,
     },
   });
 
@@ -82,22 +82,19 @@ async function uploadImages(listingId, sellerId, files) {
     throw err;
   }
 
-  // Upload each image to Cloudinary
   const uploadResults = await Promise.all(
     files.map((file) => uploadListingImage(file.buffer, listingId))
   );
 
-  // Create ListingImage records
   await prisma.listingImage.createMany({
     data: uploadResults.map((r, i) => ({
       listingId,
-      cloudinaryId: r.public_id,   // ← schema field name
+      cloudinaryId: r.public_id,
       url: r.secure_url,
       order: i,
     })),
   });
 
-  // AI image validation
   const imageUrls = uploadResults.map((r) => r.secure_url);
   let aiValidation = null;
   try {
@@ -130,7 +127,7 @@ async function uploadImages(listingId, sellerId, files) {
 }
 
 /**
- * Get paginated listings with optional filters.
+ * Get paginated active listings with optional filters (public marketplace).
  */
 async function getListings(filters) {
   const { crop, region, minPrice, maxPrice, grade, page = 1, limit = 20 } = filters;
@@ -152,13 +149,13 @@ async function getListings(filters) {
     if (maxPrice !== undefined) where.askingPrice.lte = Number(maxPrice);
   }
 
-  const skip = (page - 1) * limit;
+  const skip = (Number(page) - 1) * Number(limit);
 
   const [listings, total] = await Promise.all([
     prisma.listing.findMany({
       where,
       include: {
-        seller: { select: { id: true, name: true, location: true, isTrader: false } },
+        seller: { select: { id: true, name: true, location: true } },
         images: true,
       },
       skip,
@@ -177,7 +174,28 @@ async function getListings(filters) {
 }
 
 /**
- * Get a single listing by ID with full detail.
+ * Get all listings for the authenticated seller (all statuses, not just ACTIVE).
+ * Used by the farmer's "My Listings" page.
+ */
+async function getMyListings(sellerId) {
+  const listings = await prisma.listing.findMany({
+    where: {
+      sellerId,
+      status: { not: 'CANCELLED' },   // exclude cancelled listings
+    },
+    include: {
+      images: true,
+      _count: { select: { orders: true } },
+    },
+    orderBy: { createdAt: 'desc' },
+  });
+
+  return listings;
+}
+
+/**
+ * Get a single listing by ID with full detail including orders.
+ * ── FIX: now includes orders with buyer info so farmer can see pending orders ──
  */
 async function getListingById(id) {
   const listing = await prisma.listing.findUnique({
@@ -185,7 +203,13 @@ async function getListingById(id) {
     include: {
       seller: { select: { id: true, name: true, location: true } },
       images: true,
-      _count: { select: { orders: true } },
+      orders: {
+        where: { status: { notIn: ['CANCELLED'] } },
+        include: {
+          buyer: { select: { id: true, name: true, phone: true } },
+        },
+        orderBy: { createdAt: 'desc' },
+      },
     },
   });
 
@@ -215,11 +239,11 @@ async function updateListing(listingId, sellerId, data) {
   }
 
   const updateData = {};
-  if (data.cropType !== undefined)    updateData.cropType    = data.cropType;
-  if (data.quantityKg !== undefined)  updateData.quantityKg  = data.quantityKg;
-  if (data.harvestDate !== undefined) updateData.harvestDate = new Date(data.harvestDate);
+  if (data.cropType !== undefined)     updateData.cropType     = data.cropType;
+  if (data.quantityKg !== undefined)   updateData.quantityKg   = data.quantityKg;
+  if (data.harvestDate !== undefined)  updateData.harvestDate  = new Date(data.harvestDate);
   if (data.qualityGrade !== undefined) updateData.qualityGrade = data.qualityGrade;
-  if (data.askingPrice !== undefined) updateData.askingPrice  = data.askingPrice;
+  if (data.askingPrice !== undefined)  updateData.askingPrice  = data.askingPrice;
 
   return prisma.listing.update({
     where: { id: listingId },
@@ -253,6 +277,7 @@ module.exports = {
   createListing,
   uploadImages,
   getListings,
+  getMyListings,
   getListingById,
   updateListing,
   cancelListing,

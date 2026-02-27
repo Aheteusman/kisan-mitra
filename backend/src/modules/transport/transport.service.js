@@ -1,10 +1,7 @@
-const { PrismaClient } = require('@prisma/client');
+const { prisma } = require('../../config/prisma');     // ← shared singleton (FIXED)
 const axios = require('axios');
 const { env } = require('../../config/env');
 
-const prisma = new PrismaClient();
-
-// Lazily loaded to avoid issues if firebase isn't configured in test env
 function getFirestore() {
   try {
     return require('../../config/firebase').firestore;
@@ -44,8 +41,6 @@ async function bookTransport(orderId, sellerId, { transportMode, vehicleType, tr
   let distance = null;
   if (env.ORS_API_KEY && pickupAddress && deliveryAddress) {
     try {
-      // ORS requires lng,lat — attempt a geocode-free approach if coords are embedded
-      // This is best-effort; failure is non-fatal
       const [pickupLat, pickupLng] = pickupAddress.split(',').map(Number);
       const [deliveryLat, deliveryLng] = deliveryAddress.split(',').map(Number);
 
@@ -56,10 +51,9 @@ async function bookTransport(orderId, sellerId, { transportMode, vehicleType, tr
           timeout: 5000,
         });
         const summary = orsRes.data?.features?.[0]?.properties?.summary;
-        if (summary) distance = summary.distance; // meters
+        if (summary) distance = summary.distance;
       }
     } catch {
-      // ORS unavailable — continue
       distance = null;
     }
   }
@@ -74,7 +68,7 @@ async function bookTransport(orderId, sellerId, { transportMode, vehicleType, tr
     status: 'AVAILABLE',
     ...(routeId && { routeId }),
     ...(scheduledTime && { scheduledTime: new Date(scheduledTime) }),
-    ...(distance !== null && { routeId: distance.toString() }), // store distance in routeId if no routeId given
+    ...(distance !== null && !routeId && { routeId: distance.toString() }),
   };
 
   const [trip] = await prisma.$transaction([
@@ -85,7 +79,6 @@ async function bookTransport(orderId, sellerId, { transportMode, vehicleType, tr
     }),
   ]);
 
-  // Write to Firestore (non-fatal)
   try {
     const firestore = getFirestore();
     if (firestore) {
